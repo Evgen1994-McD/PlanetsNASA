@@ -66,6 +66,10 @@ dependencies {
     // ViewModel
     implementation(libs.viewmodel.compose)
     
+    // Paging
+    implementation(libs.paging.runtime)
+    implementation(libs.paging.compose)
+    
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -3,7 +3,6 @@ package com.example.planets.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
@@ -13,6 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import coil.compose.AsyncImage
 import com.example.planets.data.model.ApodItem
 import com.example.planets.ui.viewmodel.ApodViewModel
@@ -24,13 +28,14 @@ fun ApodListScreen(
     onApodClick: (ApodItem) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val apodPagingItems = viewModel.apodPagingFlow.collectAsLazyPagingItems()
     
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("NASA APOD") },
                 actions = {
-                    IconButton(onClick = { viewModel.refreshApodList() }) {
+                    IconButton(onClick = { apodPagingItems.refresh() }) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = "Обновить"
@@ -46,7 +51,7 @@ fun ApodListScreen(
                 .padding(paddingValues)
         ) {
             when {
-                uiState.isLoading -> {
+                apodPagingItems.loadState.refresh is LoadState.Loading -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -55,7 +60,8 @@ fun ApodListScreen(
                     }
                 }
                 
-                uiState.error != null -> {
+                apodPagingItems.loadState.refresh is LoadState.Error -> {
+                    val error = apodPagingItems.loadState.refresh as LoadState.Error
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -70,42 +76,84 @@ fun ApodListScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = uiState.error ?: "Неизвестная ошибка",
+                            text = error.error.message ?: "Неизвестная ошибка",
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.loadApodList() }) {
+                        Button(onClick = { apodPagingItems.refresh() }) {
                             Text("Повторить")
                         }
                     }
                 }
                 
-                uiState.apodList.isNotEmpty() -> {
+                else -> {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
                         contentPadding = PaddingValues(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(uiState.apodList) { apod ->
-                            ApodCard(
-                                apod = apod,
-                                onClick = { onApodClick(apod) }
-                            )
+                        items(
+                            count = apodPagingItems.itemCount,
+                            key = apodPagingItems.itemKey { it.date },
+                            contentType = apodPagingItems.itemContentType { "apod" }
+                        ) { index ->
+                            val apod = apodPagingItems[index]
+                            if (apod != null) {
+                                ApodCard(
+                                    apod = apod,
+                                    onClick = { onApodClick(apod) }
+                                )
+                            } else {
+                                // Placeholder while loading
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .aspectRatio(1f),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator()
+                                    }
+                                }
+                            }
                         }
-                    }
-                }
-                
-                else -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Нет данных",
-                            style = MaterialTheme.typography.headlineSmall
-                        )
+                        
+                        // Append loading state
+                        if (apodPagingItems.loadState.append is LoadState.Loading) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                        }
+                        
+                        // Append error state
+                        if (apodPagingItems.loadState.append is LoadState.Error) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Ошибка загрузки",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }

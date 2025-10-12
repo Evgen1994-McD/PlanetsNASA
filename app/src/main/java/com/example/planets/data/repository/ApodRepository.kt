@@ -1,9 +1,14 @@
 package com.example.planets.data.repository
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import com.example.planets.data.api.ApiClient
 import com.example.planets.data.model.ApodItem
 import com.example.planets.data.model.toApodItem
+import com.example.planets.data.paging.ApodPagingSource
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
@@ -14,6 +19,19 @@ class ApodRepository {
     
     // Демо API ключ для тестирования
     private val apiKey = "cVsJ9alkirbS7Jmj5bA3zFHdopkvdEqnKG45p34o"
+    
+    fun getApodPagingFlow(): Flow<PagingData<ApodItem>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 10,
+                enablePlaceholders = false,
+                prefetchDistance = 5
+            ),
+            pagingSourceFactory = {
+                ApodPagingSource(apiService)
+            }
+        ).flow
+    }
     
     suspend fun getApodList(count: Int = 10): Result<List<ApodItem>> = withContext(Dispatchers.IO) {
         try {
