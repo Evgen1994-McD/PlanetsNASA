@@ -13,7 +13,7 @@ class ApodRepository {
     private val apiService = ApiClient.nasaApiService
     
     // Демо API ключ для тестирования
-    private val apiKey = "DEMO_KEY"
+    private val apiKey = "cVsJ9alkirbS7Jmj5bA3zFHdopkvdEqnKG45p34o"
     
     suspend fun getApodList(count: Int = 10): Result<List<ApodItem>> = withContext(Dispatchers.IO) {
         try {
