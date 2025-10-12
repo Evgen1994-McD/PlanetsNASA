@@ -54,7 +54,13 @@ fun ApodNavigation(
         
         // Favorites screen
         composable("favorites") {
-            FavoritesScreen(viewModel = viewModel)
+            FavoritesScreen(
+                viewModel = viewModel,
+                onApodClick = { apod ->
+                    viewModel.selectApod(apod)
+                    navController.navigate("apod_detail")
+                }
+            )
         }
         
         // Settings screen

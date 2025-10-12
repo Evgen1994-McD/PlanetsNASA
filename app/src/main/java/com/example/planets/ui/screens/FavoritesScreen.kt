@@ -1,5 +1,6 @@
 package com.example.planets.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,7 +22,10 @@ import com.example.planets.ui.viewmodel.ApodViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun FavoritesScreen(viewModel: ApodViewModel) {
+fun FavoritesScreen(
+    viewModel: ApodViewModel,
+    onApodClick: (ApodItem) -> Unit
+) {
     val favorites by viewModel.favoritesFlow.collectAsState(initial = emptyList())
     
     if (favorites.isEmpty()) {
@@ -64,7 +68,11 @@ fun FavoritesScreen(viewModel: ApodViewModel) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(favorites) { apod ->
-                FavoriteCard(apod = apod, viewModel = viewModel)
+                FavoriteCard(
+                    apod = apod, 
+                    viewModel = viewModel,
+                    onClick = { onApodClick(apod) }
+                )
             }
         }
     }
@@ -73,7 +81,8 @@ fun FavoritesScreen(viewModel: ApodViewModel) {
 @Composable
 fun FavoriteCard(
     apod: ApodItem,
-    viewModel: ApodViewModel
+    viewModel: ApodViewModel,
+    onClick: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     
@@ -88,7 +97,8 @@ fun FavoriteCard(
                     contentDescription = apod.title,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp),
+                        .height(200.dp)
+                        .clickable { onClick() },
                     contentScale = ContentScale.Crop,
                     loading = {
                         Box(
