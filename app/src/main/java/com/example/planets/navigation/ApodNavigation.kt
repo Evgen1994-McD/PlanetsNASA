@@ -1,6 +1,7 @@
 package com.example.planets.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -30,7 +31,8 @@ fun ApodNavigation(
         }
         
         composable("apod_detail") {
-            val selectedApod = viewModel.uiState.value.selectedApod
+            val uiState = viewModel.uiState.collectAsState()
+            val selectedApod = uiState.value.selectedApod
             if (selectedApod != null) {
                 ApodDetailScreen(
                     apod = selectedApod,
