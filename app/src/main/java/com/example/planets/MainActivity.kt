@@ -5,12 +5,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.compose.rememberNavController
 import com.example.planets.navigation.ApodNavigation
+import com.example.planets.ui.components.BottomNavigationBar
 import com.example.planets.ui.theme.PlanetsTheme
 import com.example.planets.ui.viewmodel.ApodViewModel
 
@@ -20,20 +25,36 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PlanetsTheme {
-                       Surface(
-                           modifier = Modifier.fillMaxSize(),
-                           color = MaterialTheme.colorScheme.background
-                       ) {
-                           val context = LocalContext.current
-                           val viewModel: ApodViewModel = viewModel(
-                               key = "apod_viewmodel"
-                           ) {
-                               ApodViewModel(context.applicationContext as android.app.Application)
-                           }
-                           
-                           ApodNavigation(viewModel = viewModel)
-                       }
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    MainScreen()
+                }
             }
         }
+    }
+}
+
+@Composable
+fun MainScreen() {
+    val context = LocalContext.current
+    val navController = rememberNavController()
+    val viewModel: ApodViewModel = viewModel(
+        key = "apod_viewmodel"
+    ) {
+        ApodViewModel(context.applicationContext as android.app.Application)
+    }
+    
+    Scaffold(
+        bottomBar = {
+            BottomNavigationBar(navController = navController)
+        }
+    ) { paddingValues ->
+        ApodNavigation(
+            navController = navController,
+            viewModel = viewModel,
+            modifier = Modifier.padding(paddingValues)
+        )
     }
 }
