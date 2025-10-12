@@ -38,7 +38,31 @@ class ApodViewModel(application: Application) : AndroidViewModel(application) {
     }
     
     fun clearError() {
-        _uiState.value = _uiState.value.copy(error = null)
+        _uiState.value = _uiState.value.copy(
+            error = null,
+            hasNetworkError = false,
+            hasHttpError = false,
+            httpErrorCode = null
+        )
+    }
+    
+    fun setNetworkError() {
+        _uiState.value = _uiState.value.copy(
+            hasNetworkError = true,
+            isLoading = false
+        )
+    }
+    
+    fun setHttpError(errorCode: Int) {
+        _uiState.value = _uiState.value.copy(
+            hasHttpError = true,
+            httpErrorCode = errorCode,
+            isLoading = false
+        )
+    }
+    
+    fun setLoading(loading: Boolean) {
+        _uiState.value = _uiState.value.copy(isLoading = loading)
     }
     
     fun clearOldCache() {
@@ -66,5 +90,9 @@ class ApodViewModel(application: Application) : AndroidViewModel(application) {
 
 data class ApodUiState(
     val selectedApod: ApodItem? = null,
-    val error: String? = null
+    val error: String? = null,
+    val isLoading: Boolean = false,
+    val hasNetworkError: Boolean = false,
+    val hasHttpError: Boolean = false,
+    val httpErrorCode: Int? = null
 )

@@ -80,11 +80,20 @@ class ApodPagingSource(
                                 }
                             } else {
                                 println("ApodPagingSource: API request failed for $dateString: ${response.code()}")
+                                // Если это первая страница и получили HTTP ошибку, возвращаем ошибку
+                                if (page == 0 && i == 0) {
+                                    return LoadResult.Error(
+                                        Exception("HTTP ${response.code()}: ${response.message()}")
+                                    )
+                                }
                             }
                         }
                     } catch (e: Exception) {
-                        // Skip failed requests and continue with other dates
                         println("ApodPagingSource: Failed to load APOD for date $dateString: ${e.message}")
+                        // Если это первая страница и первая попытка, возвращаем ошибку сети
+                        if (page == 0 && i == 0) {
+                            return LoadResult.Error(e)
+                        }
                     }
                 }
 

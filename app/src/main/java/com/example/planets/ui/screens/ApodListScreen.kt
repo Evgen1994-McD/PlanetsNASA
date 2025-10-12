@@ -12,26 +12,21 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.res.painterResource
-import coil.compose.SubcomposeAsyncImage
-import coil.compose.SubcomposeAsyncImageContent
-import com.example.planets.R
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
-import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemContentType
-import androidx.paging.compose.itemKey
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
+import com.example.planets.R
 import com.example.planets.data.model.ApodItem
+import com.example.planets.ui.components.GeneralErrorScreen
+import com.example.planets.ui.components.HttpErrorScreen
+import com.example.planets.ui.components.NetworkErrorScreen
 import com.example.planets.ui.viewmodel.ApodViewModel
 import kotlinx.coroutines.launch
 
@@ -46,6 +41,36 @@ fun ApodListScreen(
     
     // Сохраняем состояние списка между навигацией
     val listState = rememberLazyGridState()
+    
+    // Обработка ошибок загрузки
+    LaunchedEffect(apodPagingItems.loadState.refresh) {
+        when (val refreshState = apodPagingItems.loadState.refresh) {
+            is LoadState.Error -> {
+                val error = refreshState.error
+                when {
+                    error.message?.contains("HTTP 404") == true -> {
+                        viewModel.setHttpError(404)
+                    }
+                    error.message?.contains("HTTP 5") == true -> {
+                        viewModel.setHttpError(500)
+                    }
+                    error.message?.contains("Unable to resolve host") == true -> {
+                        viewModel.setNetworkError()
+                    }
+                    else -> {
+                        viewModel.setHttpError(0)
+                    }
+                }
+            }
+            is LoadState.Loading -> {
+                viewModel.setLoading(true)
+            }
+            is LoadState.NotLoading -> {
+                viewModel.setLoading(false)
+                viewModel.clearError()
+            }
+        }
+    }
     
     Scaffold(
         topBar = {
@@ -83,6 +108,20 @@ fun ApodListScreen(
                 .padding(paddingValues)
         ) {
             when {
+                // Показываем экраны ошибок
+                uiState.hasNetworkError -> {
+                    NetworkErrorScreen(
+                        onRetry = { apodPagingItems.retry() }
+                    )
+                }
+                
+                uiState.hasHttpError -> {
+                    HttpErrorScreen(
+                        errorCode = uiState.httpErrorCode ?: 0,
+                        onRetry = { apodPagingItems.retry() }
+                    )
+                }
+                
                 apodPagingItems.loadState.refresh is LoadState.Loading && apodPagingItems.itemCount == 0 -> {
                     // Показываем прогресс только при первой загрузке
                     Box(
@@ -95,29 +134,10 @@ fun ApodListScreen(
                 
                 apodPagingItems.loadState.refresh is LoadState.Error -> {
                     val error = apodPagingItems.loadState.refresh as LoadState.Error
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = "Ошибка загрузки",
-                            style = MaterialTheme.typography.headlineSmall,
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = error.error.message ?: "Неизвестная ошибка",
-                            style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { apodPagingItems.refresh() }) {
-                            Text("Повторить")
-                        }
-                    }
+                    GeneralErrorScreen(
+                        message = error.error.message ?: "Неизвестная ошибка",
+                        onRetry = { apodPagingItems.retry() }
+                    )
                 }
                 
                 else -> {
