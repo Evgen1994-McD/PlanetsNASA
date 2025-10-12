@@ -22,6 +22,9 @@ class ApodViewModel(application: Application) : AndroidViewModel(application) {
     // Создаем PagingSource один раз и переиспользуем его
     val apodPagingFlow: Flow<PagingData<ApodItem>> = repository.getApodPagingFlow()
     
+    // Favorites flow
+    val favoritesFlow: Flow<List<ApodItem>> = repository.getFavoritesFlow()
+    
     fun selectApod(apod: ApodItem) {
         _uiState.value = _uiState.value.copy(selectedApod = apod)
         // Cache the selected APOD for offline viewing
@@ -42,6 +45,22 @@ class ApodViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repository.clearOldCache()
         }
+    }
+    
+    // Favorites methods
+    fun toggleFavorite(apod: ApodItem) {
+        viewModelScope.launch {
+            val isFavorite = repository.isFavorite(apod.date)
+            if (isFavorite) {
+                repository.removeFromFavorites(apod.date)
+            } else {
+                repository.addToFavorites(apod)
+            }
+        }
+    }
+    
+    suspend fun isFavorite(date: String): Boolean {
+        return repository.isFavorite(date)
     }
 }
 

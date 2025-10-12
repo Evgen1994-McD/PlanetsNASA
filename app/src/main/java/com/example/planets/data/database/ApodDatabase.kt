@@ -6,8 +6,8 @@ import androidx.room.RoomDatabase
 import android.content.Context
 
 @Database(
-    entities = [ApodEntity::class],
-    version = 1,
+    entities = [ApodEntity::class, FavoriteEntity::class],
+    version = 2,
     exportSchema = false
 )
 abstract class ApodDatabase : RoomDatabase() {

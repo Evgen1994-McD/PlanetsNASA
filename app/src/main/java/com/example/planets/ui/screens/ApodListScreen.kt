@@ -1,10 +1,13 @@
 package com.example.planets.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
@@ -30,6 +33,7 @@ import androidx.paging.compose.itemKey
 import coil.compose.AsyncImage
 import com.example.planets.data.model.ApodItem
 import com.example.planets.ui.viewmodel.ApodViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -133,7 +137,8 @@ fun ApodListScreen(
                             if (apod != null) {
                                 ApodCard(
                                     apod = apod,
-                                    onClick = { onApodClick(apod) }
+                                    onClick = { onApodClick(apod) },
+                                    viewModel = viewModel
                                 )
                             } else {
                                 // Placeholder while loading
@@ -194,62 +199,94 @@ fun ApodListScreen(
 @Composable
 fun ApodCard(
     apod: ApodItem,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    viewModel: ApodViewModel
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    var isFavorite by remember { mutableStateOf(false) }
+    
+    // Check if item is favorite
+    LaunchedEffect(apod.date) {
+        isFavorite = viewModel.isFavorite(apod.date)
+    }
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f),
-        onClick = onClick,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column {
-            SubcomposeAsyncImage(
-                model = apod.url,
-                contentDescription = apod.title,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentScale = ContentScale.Crop,
-                loading = {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.planet1),
-                            contentDescription = "Planet placeholder",
-                            modifier = Modifier.size(48.dp)
-                        )
+        Box {
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                SubcomposeAsyncImage(
+                    model = apod.url,
+                    contentDescription = apod.title,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .clickable { onClick() },
+                    contentScale = ContentScale.Crop,
+                    loading = {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.planet1),
+                                contentDescription = "Planet placeholder",
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+                    },
+                    error = {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.planet1),
+                                contentDescription = "Planet placeholder",
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+                    }
+                )
+                
+                Text(
+                    text = apod.title,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(8.dp),
+                    maxLines = 2
+                )
+                
+                Text(
+                    text = apod.date,
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            // Favorite button
+            IconButton(
+                onClick = {
+                    coroutineScope.launch {
+                        viewModel.toggleFavorite(apod)
+                        isFavorite = !isFavorite
                     }
                 },
-                error = {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.planet1),
-                            contentDescription = "Planet placeholder",
-                            modifier = Modifier.size(48.dp)
-                        )
-                    }
-                }
-            )
-            
-            Text(
-                text = apod.title,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(8.dp),
-                maxLines = 2
-            )
-            
-            Text(
-                text = apod.date,
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+            ) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = if (isFavorite) "Удалить из избранного" else "Добавить в избранное",
+                    tint = if (isFavorite) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

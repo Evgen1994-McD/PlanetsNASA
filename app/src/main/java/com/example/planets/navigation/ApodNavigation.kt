@@ -53,7 +53,7 @@ fun ApodNavigation(
         
         // Favorites screen
         composable("favorites") {
-            FavoritesScreen()
+            FavoritesScreen(viewModel = viewModel)
         }
         
         // Settings screen

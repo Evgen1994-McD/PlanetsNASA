@@ -7,12 +7,14 @@ import androidx.paging.PagingData
 import com.example.planets.data.api.ApiClient
 import com.example.planets.data.database.ApodDatabase
 import com.example.planets.data.database.toApodEntity
+import com.example.planets.data.database.toFavoriteEntity
 import com.example.planets.data.model.ApodItem
 import com.example.planets.data.model.toApodItem
 import com.example.planets.data.paging.ApodPagingSource
 import com.example.planets.utils.NetworkMonitor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
@@ -24,7 +26,7 @@ class ApodRepository(private val context: Context) {
     private val apodDao = database.apodDao()
     private val networkMonitor = NetworkMonitor(context)
     
-    // Демо API ключ для тестирования
+    //  API ключ для тестирования
     private val apiKey = "cVsJ9alkirbS7Jmj5bA3zFHdopkvdEqnKG45p34o"
     
     // Кэш для хранения загруженных данных между экземплярами PagingSource
@@ -58,6 +60,25 @@ class ApodRepository(private val context: Context) {
     suspend fun clearOldCache() = withContext(Dispatchers.IO) {
         val oneWeekAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000)
         apodDao.deleteOldApods(oneWeekAgo)
+    }
+    
+    // Favorites methods
+    suspend fun addToFavorites(apod: ApodItem) = withContext(Dispatchers.IO) {
+        apodDao.insertFavorite(apod.toFavoriteEntity())
+    }
+    
+    suspend fun removeFromFavorites(date: String) = withContext(Dispatchers.IO) {
+        apodDao.deleteFavoriteByDate(date)
+    }
+    
+    suspend fun isFavorite(date: String): Boolean = withContext(Dispatchers.IO) {
+        apodDao.isFavorite(date)
+    }
+    
+    fun getFavoritesFlow(): Flow<List<ApodItem>> {
+        return apodDao.getAllFavorites().map { favorites ->
+            favorites.map { it.toApodItem() }
+        }
     }
     
     // Методы для работы с кэшем
