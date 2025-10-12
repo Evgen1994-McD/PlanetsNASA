@@ -70,7 +70,7 @@ fun ApodListScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = uiState.error,
+                            text = uiState.error ?: "Неизвестная ошибка",
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center
                         )
