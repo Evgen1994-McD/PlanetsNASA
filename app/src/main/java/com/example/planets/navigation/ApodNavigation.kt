@@ -46,7 +46,8 @@ fun ApodNavigation(
                     onBackClick = {
                         viewModel.clearSelectedApod()
                         navController.popBackStack()
-                    }
+                    },
+                    viewModel = viewModel
                 )
             }
         }

@@ -5,12 +5,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -19,13 +22,23 @@ import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import com.example.planets.R
 import com.example.planets.data.model.ApodItem
+import com.example.planets.ui.viewmodel.ApodViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ApodDetailScreen(
     apod: ApodItem,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    viewModel: ApodViewModel
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    var isFavorite by remember { mutableStateOf(false) }
+    
+    // Check if item is favorite
+    LaunchedEffect(apod.date) {
+        isFavorite = viewModel.isFavorite(apod.date)
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -35,6 +48,22 @@ fun ApodDetailScreen(
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Назад"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                viewModel.toggleFavorite(apod)
+                                isFavorite = !isFavorite
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = if (isFavorite) "Удалить из избранного" else "Добавить в избранное",
+                            tint = if (isFavorite) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
