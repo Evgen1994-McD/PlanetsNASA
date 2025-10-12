@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -17,6 +18,7 @@ import coil.compose.SubcomposeAsyncImage
 import com.example.planets.R
 import com.example.planets.data.model.ApodItem
 import com.example.planets.ui.viewmodel.ApodViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun FavoritesScreen(viewModel: ApodViewModel) {
@@ -73,67 +75,89 @@ fun FavoriteCard(
     apod: ApodItem,
     viewModel: ApodViewModel
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column {
-            SubcomposeAsyncImage(
-                model = apod.hdurl ?: apod.url,
-                contentDescription = apod.title,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-                contentScale = ContentScale.Crop,
-                loading = {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.planet1),
-                            contentDescription = "Planet placeholder",
-                            modifier = Modifier.size(48.dp)
-                        )
+        Box {
+            Column {
+                SubcomposeAsyncImage(
+                    model = apod.hdurl ?: apod.url,
+                    contentDescription = apod.title,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentScale = ContentScale.Crop,
+                    loading = {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.planet1),
+                                contentDescription = "Planet placeholder",
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+                    },
+                    error = {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.planet1),
+                                contentDescription = "Planet placeholder",
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+                    }
+                )
+                
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = apod.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 2
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Text(
+                        text = "Дата: ${apod.date}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    
+                    Spacer(modifier = Modifier.height(4.dp))
+                    
+                    Text(
+                        text = "Тип: ${apod.mediaType}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            
+            // Favorite button (always red since it's in favorites)
+            IconButton(
+                onClick = {
+                    coroutineScope.launch {
+                        viewModel.toggleFavorite(apod)
                     }
                 },
-                error = {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.planet1),
-                            contentDescription = "Planet placeholder",
-                            modifier = Modifier.size(48.dp)
-                        )
-                    }
-                }
-            )
-            
-            Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
             ) {
-                Text(
-                    text = apod.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 2
-                )
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                Text(
-                    text = "Дата: ${apod.date}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                
-                Spacer(modifier = Modifier.height(4.dp))
-                
-                Text(
-                    text = "Тип: ${apod.mediaType}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                Icon(
+                    imageVector = Icons.Default.Favorite,
+                    contentDescription = "Удалить из избранного",
+                    tint = Color.Red
                 )
             }
         }
