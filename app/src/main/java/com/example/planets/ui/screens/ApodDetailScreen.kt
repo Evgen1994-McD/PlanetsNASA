@@ -5,14 +5,19 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImageContent
+import com.example.planets.R
 import com.example.planets.data.model.ApodItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,13 +48,37 @@ fun ApodDetailScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             // Изображение
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = apod.hdurl ?: apod.url,
                 contentDescription = apod.title,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(300.dp),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                loading = {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.planet1),
+                            contentDescription = "Planet placeholder",
+                            modifier = Modifier.size(64.dp)
+                        )
+                    }
+                },
+                error = {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.planet1),
+                            contentDescription = "Planet placeholder",
+                            modifier = Modifier.size(64.dp)
+                        )
+                    }
+                }
             )
             
             // Заголовок
