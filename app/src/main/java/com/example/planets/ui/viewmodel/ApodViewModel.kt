@@ -15,10 +15,11 @@ import kotlinx.coroutines.launch
 class ApodViewModel(application: Application) : AndroidViewModel(application) {
     
     private val repository = ApodRepository(application)
-    
+
     private val _uiState = MutableStateFlow(ApodUiState())
     val uiState: StateFlow<ApodUiState> = _uiState.asStateFlow()
-    
+
+    // Создаем PagingSource один раз и переиспользуем его
     val apodPagingFlow: Flow<PagingData<ApodItem>> = repository.getApodPagingFlow()
     
     fun selectApod(apod: ApodItem) {
@@ -27,6 +28,10 @@ class ApodViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repository.cacheApod(apod)
         }
+    }
+    
+    fun clearSelectedApod() {
+        _uiState.value = _uiState.value.copy(selectedApod = null)
     }
     
     fun clearError() {

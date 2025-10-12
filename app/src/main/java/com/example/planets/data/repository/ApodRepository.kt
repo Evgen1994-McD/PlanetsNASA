@@ -27,15 +27,22 @@ class ApodRepository(private val context: Context) {
     // Демо API ключ для тестирования
     private val apiKey = "cVsJ9alkirbS7Jmj5bA3zFHdopkvdEqnKG45p34o"
     
+    // Кэш для хранения загруженных данных между экземплярами PagingSource
+    private val cachedData = mutableListOf<ApodItem>()
+    private var lastLoadTime = 0L
+    private val cacheTimeout = 5 * 60 * 1000L // 5 минут
+    
     fun getApodPagingFlow(): Flow<PagingData<ApodItem>> {
         return Pager(
             config = PagingConfig(
                 pageSize = 10,
                 enablePlaceholders = false,
-                prefetchDistance = 5
+                prefetchDistance = 3,
+                initialLoadSize = 20
             ),
-            pagingSourceFactory = {
-                ApodPagingSource(apiService, apodDao, networkMonitor)
+            pagingSourceFactory = { 
+                // Создаем новый экземпляр PagingSource для каждого вызова
+                ApodPagingSource(apiService, apodDao, networkMonitor, this)
             }
         ).flow
     }
@@ -51,6 +58,29 @@ class ApodRepository(private val context: Context) {
     suspend fun clearOldCache() = withContext(Dispatchers.IO) {
         val oneWeekAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000)
         apodDao.deleteOldApods(oneWeekAgo)
+    }
+    
+    // Методы для работы с кэшем
+    fun getCachedData(): List<ApodItem> = cachedData.toList()
+    
+    fun isCacheValid(): Boolean {
+        val currentTime = System.currentTimeMillis()
+        return (currentTime - lastLoadTime) < cacheTimeout && cachedData.isNotEmpty()
+    }
+    
+    fun updateCache(data: List<ApodItem>, isFirstPage: Boolean = false) {
+        if (isFirstPage) {
+            cachedData.clear()
+            cachedData.addAll(data)
+        } else {
+            cachedData.addAll(data)
+        }
+        lastLoadTime = System.currentTimeMillis()
+    }
+    
+    fun clearCache() {
+        cachedData.clear()
+        lastLoadTime = 0L
     }
     
     suspend fun getApodList(count: Int = 10): Result<List<ApodItem>> = withContext(Dispatchers.IO) {

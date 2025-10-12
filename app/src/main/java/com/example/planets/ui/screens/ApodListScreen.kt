@@ -3,11 +3,13 @@ package com.example.planets.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -30,6 +32,9 @@ fun ApodListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val apodPagingItems = viewModel.apodPagingFlow.collectAsLazyPagingItems()
+    
+    // Сохраняем состояние списка между навигацией
+    val listState = rememberLazyGridState()
     
     Scaffold(
         topBar = {
@@ -67,7 +72,8 @@ fun ApodListScreen(
                 .padding(paddingValues)
         ) {
             when {
-                apodPagingItems.loadState.refresh is LoadState.Loading -> {
+                apodPagingItems.loadState.refresh is LoadState.Loading && apodPagingItems.itemCount == 0 -> {
+                    // Показываем прогресс только при первой загрузке
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -106,14 +112,15 @@ fun ApodListScreen(
                 else -> {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
+                        state = listState,
                         contentPadding = PaddingValues(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(
                             count = apodPagingItems.itemCount,
-                            key = apodPagingItems.itemKey { it.date },
-                            contentType = apodPagingItems.itemContentType { "apod" }
+                            key = { index -> "apod_$index" },
+                            contentType = { "apod" }
                         ) { index ->
                             val apod = apodPagingItems[index]
                             if (apod != null) {
@@ -139,8 +146,8 @@ fun ApodListScreen(
                             }
                         }
                         
-                        // Append loading state
-                        if (apodPagingItems.loadState.append is LoadState.Loading) {
+                        // Append loading state - показываем только если есть данные
+                        if (apodPagingItems.loadState.append is LoadState.Loading && apodPagingItems.itemCount > 0) {
                             item {
                                 Box(
                                     modifier = Modifier

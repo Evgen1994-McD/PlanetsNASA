@@ -1,7 +1,6 @@
 package com.example.planets.data.model
 
 data class ApodItem(
-    val id: Int = 0,
     val date: String,
     val explanation: String,
     val hdurl: String?,
@@ -13,7 +12,6 @@ data class ApodItem(
 
 fun ApodResponse.toApodItem(): ApodItem {
     return ApodItem(
-        id = this.id,
         date = this.date ?: "",
         explanation = this.explanation ?: "",
         hdurl = this.hdurl,

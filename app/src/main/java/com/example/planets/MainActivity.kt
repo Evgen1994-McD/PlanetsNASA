@@ -25,9 +25,12 @@ class MainActivity : ComponentActivity() {
                            color = MaterialTheme.colorScheme.background
                        ) {
                            val context = LocalContext.current
-                           val viewModel: ApodViewModel = viewModel {
+                           val viewModel: ApodViewModel = viewModel(
+                               key = "apod_viewmodel"
+                           ) {
                                ApodViewModel(context.applicationContext as android.app.Application)
                            }
+                           
                            ApodNavigation(viewModel = viewModel)
                        }
             }
