@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,7 +34,22 @@ fun ApodListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("NASA APOD") },
+                title = { 
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text("NASA APOD")
+                        if (apodPagingItems.loadState.refresh is LoadState.Error) {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = "Офлайн режим",
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                },
                 actions = {
                     IconButton(onClick = { apodPagingItems.refresh() }) {
                         Icon(

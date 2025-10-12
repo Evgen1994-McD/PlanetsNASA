@@ -1,21 +1,28 @@
 package com.example.planets.data.repository
 
+import android.content.Context
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.example.planets.data.api.ApiClient
+import com.example.planets.data.database.ApodDatabase
+import com.example.planets.data.database.toApodEntity
 import com.example.planets.data.model.ApodItem
 import com.example.planets.data.model.toApodItem
 import com.example.planets.data.paging.ApodPagingSource
+import com.example.planets.utils.NetworkMonitor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
-class ApodRepository {
+class ApodRepository(private val context: Context) {
     
     private val apiService = ApiClient.nasaApiService
+    private val database = ApodDatabase.getDatabase(context)
+    private val apodDao = database.apodDao()
+    private val networkMonitor = NetworkMonitor(context)
     
     // Демо API ключ для тестирования
     private val apiKey = "cVsJ9alkirbS7Jmj5bA3zFHdopkvdEqnKG45p34o"
@@ -28,9 +35,22 @@ class ApodRepository {
                 prefetchDistance = 5
             ),
             pagingSourceFactory = {
-                ApodPagingSource(apiService)
+                ApodPagingSource(apiService, apodDao, networkMonitor)
             }
         ).flow
+    }
+    
+    suspend fun cacheApod(apod: ApodItem) = withContext(Dispatchers.IO) {
+        apodDao.insertApod(apod.toApodEntity())
+    }
+    
+    suspend fun getCachedApods(): List<ApodItem> = withContext(Dispatchers.IO) {
+        apodDao.getRecentCachedApods(50).map { it.toApodItem() }
+    }
+    
+    suspend fun clearOldCache() = withContext(Dispatchers.IO) {
+        val oneWeekAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000)
+        apodDao.deleteOldApods(oneWeekAgo)
     }
     
     suspend fun getApodList(count: Int = 10): Result<List<ApodItem>> = withContext(Dispatchers.IO) {

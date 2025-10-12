@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
 import com.example.planets.navigation.ApodNavigation
 import com.example.planets.ui.theme.PlanetsTheme
 import com.example.planets.ui.viewmodel.ApodViewModel
@@ -19,13 +20,16 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PlanetsTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    val viewModel: ApodViewModel = viewModel()
-                    ApodNavigation(viewModel = viewModel)
-                }
+                       Surface(
+                           modifier = Modifier.fillMaxSize(),
+                           color = MaterialTheme.colorScheme.background
+                       ) {
+                           val context = LocalContext.current
+                           val viewModel: ApodViewModel = viewModel {
+                               ApodViewModel(context.applicationContext as android.app.Application)
+                           }
+                           ApodNavigation(viewModel = viewModel)
+                       }
             }
         }
     }
