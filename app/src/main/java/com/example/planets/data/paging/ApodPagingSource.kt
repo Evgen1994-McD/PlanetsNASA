@@ -69,14 +69,16 @@ class ApodPagingSource(
                         } else {
                             // Load from API and cache
                             println("ApodPagingSource: Loading APOD from API for $dateString")
-                            val response = apiService.getApod(API_KEY, dateString)
+                            val response = apiService.getApodList(API_KEY)
                             if (response.isSuccessful) {
                                 response.body()?.let { apodResponse ->
-                                    val apodItem = apodResponse.toApodItem()
-                                    apodItems.add(apodItem)
-                                    // Cache the result
-                                    apodDao.insertApod(apodItem.toApodEntity())
-                                    println("ApodPagingSource: Successfully loaded APOD for $dateString")
+                               apodResponse.forEach{ item ->
+                                    val apodItem = item.toApodItem()
+                                        apodItems.add(apodItem)
+                                   apodDao.insertApod(apodItem.toApodEntity())
+
+                                    }
+
                                 }
                             } else {
                                 println("ApodPagingSource: API request failed for $dateString: ${response.code()}")
