@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.example.planets.data.model.ApodItem
 import com.example.planets.data.repository.ApodRepository
 import kotlinx.coroutines.flow.Flow
@@ -21,6 +22,7 @@ class ApodViewModel(application: Application) : AndroidViewModel(application) {
 
     // Создаем PagingSource один раз и переиспользуем его
     val apodPagingFlow: Flow<PagingData<ApodItem>> = repository.getApodPagingFlow()
+        .cachedIn(viewModelScope)
     
     // Favorites flow
     val favoritesFlow: Flow<List<ApodItem>> = repository.getFavoritesFlow()
