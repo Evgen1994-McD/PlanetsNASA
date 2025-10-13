@@ -2,22 +2,27 @@ package com.example.planets.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.planets.ui.viewmodel.ApodViewModel
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(viewModel: ApodViewModel) {
+    var showClearCacheDialog by remember { mutableStateOf(false) }
+    var showSuccessMessage by remember { mutableStateOf(false) }
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Icon(
             imageVector = Icons.Default.Settings,
@@ -26,21 +31,106 @@ fun SettingsScreen() {
             tint = MaterialTheme.colorScheme.primary
         )
         
-        Spacer(modifier = Modifier.height(16.dp))
-        
         Text(
             text = "Настройки",
             style = MaterialTheme.typography.headlineMedium,
             textAlign = TextAlign.Center
         )
         
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(32.dp))
         
-        Text(
-            text = "Здесь будут настройки приложения",
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+        // Кнопка очистки кэша
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = "Очистить кэш",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "Удалить все сохранённые APOD из кэша и избранного",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                
+                Button(
+                    onClick = { showClearCacheDialog = true },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Clear cache",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Очистить")
+                }
+            }
+        }
+    }
+    
+    // Диалог подтверждения
+    if (showClearCacheDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearCacheDialog = false },
+            title = {
+                Text("Очистить кэш?")
+            },
+            text = {
+                Text("Это действие удалит все сохранённые APOD из кэша и избранного. При следующей загрузке данные будут загружены заново.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.clearAllCache()
+                        showClearCacheDialog = false
+                        showSuccessMessage = true
+                    }
+                ) {
+                    Text("Очистить")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showClearCacheDialog = false }
+                ) {
+                    Text("Отмена")
+                }
+            }
+        )
+    }
+    
+    // Диалог успешной очистки
+    if (showSuccessMessage) {
+        AlertDialog(
+            onDismissRequest = { showSuccessMessage = false },
+            title = {
+                Text("Кэш очищен")
+            },
+            text = {
+                Text("Все сохранённые APOD удалены из кэша и избранного. При следующей загрузке данные будут загружены заново.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { showSuccessMessage = false }
+                ) {
+                    Text("ОК")
+                }
+            }
         )
     }
 }

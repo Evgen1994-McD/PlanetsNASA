@@ -71,6 +71,14 @@ class ApodViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
     
+    fun clearAllCache() {
+        viewModelScope.launch {
+            println("ApodViewModel: Starting cache clear...")
+            repository.clearAllCache()
+            println("ApodViewModel: Cache clear completed")
+        }
+    }
+    
     // Favorites methods
     fun toggleFavorite(apod: ApodItem) {
         viewModelScope.launch {

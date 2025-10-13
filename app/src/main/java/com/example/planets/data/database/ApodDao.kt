@@ -31,6 +31,9 @@ interface ApodDao {
     @Query("DELETE FROM apod_cache WHERE cachedAt < :timestamp")
     suspend fun deleteOldApods(timestamp: Long)
     
+    @Query("DELETE FROM apod_cache")
+    suspend fun deleteAllApods()
+    
     @Query("SELECT COUNT(*) FROM apod_cache")
     suspend fun getCachedApodsCount(): Int
     
@@ -49,6 +52,9 @@ interface ApodDao {
     
     @Query("DELETE FROM favorites WHERE date = :date")
     suspend fun deleteFavoriteByDate(date: String)
+    
+    @Query("DELETE FROM favorites")
+    suspend fun deleteAllFavorites()
     
     @Query("SELECT COUNT(*) FROM favorites")
     suspend fun getFavoritesCount(): Int

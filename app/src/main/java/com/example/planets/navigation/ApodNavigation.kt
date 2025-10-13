@@ -65,7 +65,7 @@ fun ApodNavigation(
         
         // Settings screen
         composable("settings") {
-            SettingsScreen()
+            SettingsScreen(viewModel = viewModel)
         }
     }
 }
