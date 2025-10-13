@@ -33,33 +33,20 @@ class ApodPagingSource(
                 
                 println("ApodPagingSource: Loading page $page with size $pageSize")
 
-                // Проверяем кэш только для первой страницы
-                if (page == 0 && repository.isCacheValid()) {
-                    val cachedData = repository.getCachedData()
-                    val startIndex = page * pageSize
-                    val endIndex = minOf(startIndex + pageSize, cachedData.size)
-                    
-                    println("ApodPagingSource: Using cache for page $page, cached items: ${cachedData.size}")
-                    
-                    if (startIndex < cachedData.size) {
-                        val pageData = cachedData.subList(startIndex, endIndex)
-                        return@withContext LoadResult.Page(
-                            data = pageData,
-                            prevKey = null,
-                            nextKey = page + 1 // Всегда есть следующая страница для APOD
-                        )
-                    }
-                }
+                // 1. Сначала проверяем, есть ли данные в кэше
+                val offset = page * pageSize
+                val cachedApods = apodDao.getRecentCachedApods(pageSize, offset)
+                val cachedItems = cachedApods.map { it.toApodItem() }
+                
+                println("ApodPagingSource: Found ${cachedItems.size} cached items for page $page")
 
-                // Check if we have internet connection
+                // 2. Проверяем подключение к интернету
                 val isOnline = networkMonitor.isOnline()
+                println("ApodPagingSource: Network status - isOnline: $isOnline")
 
-                if (isOnline) {
-                    // Load from API and cache the results
-                    val apodItems = mutableListOf<ApodItem>()
-                    
+                val result: LoadResult<Int, ApodItem> = if (isOnline) {
+                    // 3. Если есть интернет, пытаемся загрузить с API
                     try {
-                        // Загружаем список APOD с API
                         println("ApodPagingSource: Loading APOD list from API with count $pageSize")
                         val response = apiService.getApodList(API_KEY, pageSize)
                         
@@ -67,6 +54,7 @@ class ApodPagingSource(
                             response.body()?.let { apodResponseList ->
                                 println("ApodPagingSource: Received ${apodResponseList.size} APOD items from API")
                                 
+                                val apodItems = mutableListOf<ApodItem>()
                                 apodResponseList.forEach { apodResponse ->
                                     val apodItem = apodResponse.toApodItem()
                                     apodItems.add(apodItem)
@@ -78,12 +66,34 @@ class ApodPagingSource(
                                         println("ApodPagingSource: Failed to cache APOD for ${apodItem.date}: ${e.message}")
                                     }
                                 }
-                            }
+
+                                // Обновляем кэш в репозитории
+                                repository.updateCache(apodItems, page == 0)
+
+                                println("ApodPagingSource: Loaded ${apodItems.size} items for page $page from API")
+
+                                LoadResult.Page(
+                                    data = apodItems,
+                                    prevKey = if (page == 0) null else page - 1,
+                                    nextKey = if (apodItems.size < pageSize) null else page + 1
+                                )
+                            } ?: LoadResult.Error(Exception("Empty response body"))
                         } else {
                             println("ApodPagingSource: API request failed: ${response.code()} ${response.message()}")
-                            return@withContext LoadResult.Error(
-                                Exception("HTTP ${response.code()}: ${response.message()}")
-                            )
+                            // API ошибка - проверяем кэш
+                            if (cachedItems.isNotEmpty()) {
+                                println("ApodPagingSource: API failed, using cached data")
+                                LoadResult.Page(
+                                    data = cachedItems,
+                                    prevKey = if (page == 0) null else page - 1,
+                                    nextKey = if (cachedItems.size < pageSize) null else page + 1
+                                )
+                            } else {
+                                // Нет кэша и API не работает - возвращаем ошибку
+                                LoadResult.Error(
+                                    Exception("HTTP ${response.code()}: ${response.message()}")
+                                )
+                            }
                         }
                     } catch (e: Exception) {
                         println("ApodPagingSource: Failed to load APOD list: ${e.message}")
@@ -93,31 +103,37 @@ class ApodPagingSource(
                             throw e
                         }
                         
-                        return@withContext LoadResult.Error(e)
+                        // Сетевая ошибка - проверяем кэш
+                        if (cachedItems.isNotEmpty()) {
+                            println("ApodPagingSource: Network error, using cached data")
+                            LoadResult.Page(
+                                data = cachedItems,
+                                prevKey = if (page == 0) null else page - 1,
+                                nextKey = if (cachedItems.size < pageSize) null else page + 1
+                            )
+                        } else {
+                            // Нет кэша и сеть не работает - возвращаем ошибку
+                            LoadResult.Error(e)
+                        }
                     }
-
-                    // Обновляем кэш в репозитории
-                    repository.updateCache(apodItems, page == 0)
-
-                    println("ApodPagingSource: Loaded ${apodItems.size} items for page $page")
-
-                    LoadResult.Page(
-                        data = apodItems,
-                        prevKey = if (page == 0) null else page - 1,
-                        nextKey = if (apodItems.size < pageSize) null else page + 1
-                    )
                 } else {
-                    // Load from cache when offline
-                    val offset = page * pageSize
-                    val cachedApods = apodDao.getRecentCachedApods(pageSize, offset)
-                    val apodItems = cachedApods.map { it.toApodItem() }
-
-                    LoadResult.Page(
-                        data = apodItems,
-                        prevKey = if (page == 0) null else page - 1,
-                        nextKey = if (apodItems.size < pageSize) null else page + 1
-                    )
+                    // 4. Нет интернета - используем кэш
+                    println("ApodPagingSource: No internet, using cached data")
+                    if (cachedItems.isNotEmpty()) {
+                        LoadResult.Page(
+                            data = cachedItems,
+                            prevKey = if (page == 0) null else page - 1,
+                            nextKey = if (cachedItems.size < pageSize) null else page + 1
+                        )
+                    } else {
+                        // Нет кэша и нет интернета - возвращаем ошибку отсутствия интернета
+                        LoadResult.Error(
+                            Exception("No internet connection and no cached data available")
+                        )
+                    }
                 }
+                
+                result
             } catch (e: Exception) {
                 // Re-throw cancellation exceptions to properly handle coroutine cancellation
                 if (e is CancellationException) {

@@ -3,6 +3,7 @@ package com.example.planets.ui.screens
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
@@ -50,6 +51,9 @@ fun ApodListScreen(
             is LoadState.Error -> {
                 val error = refreshState.error
                 when {
+                    error.message?.contains("No internet connection and no cached data available") == true -> {
+                        viewModel.setNetworkError()
+                    }
                     error.message?.contains("HTTP 404") == true -> {
                         viewModel.setHttpError(404)
                     }
@@ -110,14 +114,14 @@ fun ApodListScreen(
                 .padding(paddingValues)
         ) {
             when {
-                // Показываем экраны ошибок
-                uiState.hasNetworkError -> {
+                // Показываем экраны ошибок только если нет данных из кэша
+                uiState.hasNetworkError && apodPagingItems.itemCount == 0 -> {
                     NetworkErrorScreen(
                         onRetry = { apodPagingItems.retry() }
                     )
                 }
                 
-                uiState.hasHttpError -> {
+                uiState.hasHttpError && apodPagingItems.itemCount == 0 -> {
                     HttpErrorScreen(
                         errorCode = uiState.httpErrorCode ?: 0,
                         onRetry = { apodPagingItems.retry() }
@@ -134,7 +138,7 @@ fun ApodListScreen(
                     }
                 }
                 
-                apodPagingItems.loadState.refresh is LoadState.Error -> {
+                apodPagingItems.loadState.refresh is LoadState.Error && apodPagingItems.itemCount == 0 -> {
                     val error = apodPagingItems.loadState.refresh as LoadState.Error
                     GeneralErrorScreen(
                         message = error.error.message ?: "Неизвестная ошибка",
@@ -208,6 +212,40 @@ fun ApodListScreen(
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.error
                                     )
+                                }
+                            }
+                        }
+                        
+                        // Показываем индикатор офлайн режима, если есть данные из кэша и есть ошибка
+                        if (apodPagingItems.itemCount > 0 && 
+                            (apodPagingItems.loadState.refresh is LoadState.Error || 
+                             apodPagingItems.loadState.append is LoadState.Error)) {
+                            item(span = { GridItemSpan(2) }) {
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                    )
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Warning,
+                                            contentDescription = "Офлайн режим",
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Text(
+                                            text = "Показываются сохранённые данные. Проверьте подключение к интернету.",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
                                 }
                             }
                         }
