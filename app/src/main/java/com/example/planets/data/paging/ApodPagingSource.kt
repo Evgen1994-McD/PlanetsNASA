@@ -8,6 +8,7 @@ import com.example.planets.data.database.toApodEntity
 import com.example.planets.data.model.ApodItem
 import com.example.planets.data.model.toApodItem
 import com.example.planets.utils.NetworkMonitor
+import kotlinx.coroutines.CancellationException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -54,49 +55,42 @@ class ApodPagingSource(
                 // Load from API and cache the results
                 val apodItems = mutableListOf<ApodItem>()
                 
-                // Загружаем данные для текущей страницы
-                for (i in 0 until pageSize) {
-                    val daysBack = (page * pageSize + i).toLong()
-                    val targetDate = LocalDate.now().minusDays(daysBack)
-                    val dateString = targetDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
+                try {
+                    // Загружаем список APOD с API
+                    println("ApodPagingSource: Loading APOD list from API with count $pageSize")
+                    val response = apiService.getApodList(API_KEY, pageSize)
                     
-                    try {
-                        // Check if we already have this date cached
-                        val cachedApod = apodDao.getApodByDate(dateString)
-                        if (cachedApod != null) {
-                            println("ApodPagingSource: Using cached APOD for $dateString")
-                            apodItems.add(cachedApod.toApodItem())
-                        } else {
-                            // Load from API and cache
-                            println("ApodPagingSource: Loading APOD from API for $dateString")
-                            val response = apiService.getApodList(API_KEY)
-                            if (response.isSuccessful) {
-                                response.body()?.let { apodResponse ->
-                               apodResponse.forEach{ item ->
-                                    val apodItem = item.toApodItem()
-                                        apodItems.add(apodItem)
-                                   apodDao.insertApod(apodItem.toApodEntity())
-
-                                    }
-
-                                }
-                            } else {
-                                println("ApodPagingSource: API request failed for $dateString: ${response.code()}")
-                                // Если это первая страница и получили HTTP ошибку, возвращаем ошибку
-                                if (page == 0 && i == 0) {
-                                    return LoadResult.Error(
-                                        Exception("HTTP ${response.code()}: ${response.message()}")
-                                    )
+                    if (response.isSuccessful) {
+                        response.body()?.let { apodResponseList ->
+                            println("ApodPagingSource: Received ${apodResponseList.size} APOD items from API")
+                            
+                            apodResponseList.forEach { apodResponse ->
+                                val apodItem = apodResponse.toApodItem()
+                                apodItems.add(apodItem)
+                                
+                                // Кэшируем каждый элемент
+                                try {
+                                    apodDao.insertApod(apodItem.toApodEntity())
+                                } catch (e: Exception) {
+                                    println("ApodPagingSource: Failed to cache APOD for ${apodItem.date}: ${e.message}")
                                 }
                             }
                         }
-                    } catch (e: Exception) {
-                        println("ApodPagingSource: Failed to load APOD for date $dateString: ${e.message}")
-                        // Если это первая страница и первая попытка, возвращаем ошибку сети
-                        if (page == 0 && i == 0) {
-                            return LoadResult.Error(e)
-                        }
+                    } else {
+                        println("ApodPagingSource: API request failed: ${response.code()} ${response.message()}")
+                        return LoadResult.Error(
+                            Exception("HTTP ${response.code()}: ${response.message()}")
+                        )
                     }
+                } catch (e: Exception) {
+                    println("ApodPagingSource: Failed to load APOD list: ${e.message}")
+                    
+                    // Re-throw cancellation exceptions to properly handle coroutine cancellation
+                    if (e is CancellationException) {
+                        throw e
+                    }
+                    
+                    return LoadResult.Error(e)
                 }
 
                 // Обновляем кэш в репозитории
@@ -107,20 +101,25 @@ class ApodPagingSource(
                 LoadResult.Page(
                     data = apodItems,
                     prevKey = if (page == 0) null else page - 1,
-                    nextKey = page + 1 // Всегда есть следующая страница для APOD
+                    nextKey = if (apodItems.size < pageSize) null else page + 1
                 )
             } else {
                 // Load from cache when offline
-                val cachedApods = apodDao.getRecentCachedApods(pageSize)
+                val offset = page * pageSize
+                val cachedApods = apodDao.getRecentCachedApods(pageSize, offset)
                 val apodItems = cachedApods.map { it.toApodItem() }
 
                 LoadResult.Page(
                     data = apodItems,
                     prevKey = if (page == 0) null else page - 1,
-                    nextKey = if (apodItems.isEmpty()) null else page + 1
+                    nextKey = if (apodItems.size < pageSize) null else page + 1
                 )
             }
         } catch (e: Exception) {
+            // Re-throw cancellation exceptions to properly handle coroutine cancellation
+            if (e is CancellationException) {
+                throw e
+            }
             LoadResult.Error(e)
         }
     }

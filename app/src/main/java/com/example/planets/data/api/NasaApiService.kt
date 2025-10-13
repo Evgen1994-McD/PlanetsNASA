@@ -20,6 +20,6 @@ interface NasaApiService {
     @GET("planetary/apod")
     suspend fun getApodList(
         @Query("api_key") apiKey: String,
-        @Query("count") count: Int = 10
+        @Query("count") count: Int = 4
     ): Response<List<ApodResponse>>
 }

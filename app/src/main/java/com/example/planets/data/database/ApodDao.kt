@@ -16,6 +16,9 @@ interface ApodDao {
     @Query("SELECT * FROM apod_cache ORDER BY cachedAt DESC LIMIT :limit")
     suspend fun getRecentCachedApods(limit: Int): List<ApodEntity>
     
+    @Query("SELECT * FROM apod_cache ORDER BY cachedAt DESC LIMIT :limit OFFSET :offset")
+    suspend fun getRecentCachedApods(limit: Int, offset: Int): List<ApodEntity>
+    
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertApod(apod: ApodEntity)
     
