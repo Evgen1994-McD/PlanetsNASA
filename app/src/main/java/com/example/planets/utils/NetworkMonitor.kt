@@ -5,14 +5,20 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.withContext
 
 class NetworkMonitor(private val context: Context) {
     
-    fun isOnline(): Boolean {
+    suspend fun isOnline(): Boolean = withContext(Dispatchers.IO) {
+        isOnlineSync()
+    }
+    
+    private fun isOnlineSync(): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val network = connectivityManager.activeNetwork ?: return false
         val networkCapabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
@@ -47,7 +53,7 @@ class NetworkMonitor(private val context: Context) {
         connectivityManager.registerNetworkCallback(networkRequest, callback)
         
         // Send initial state
-        trySend(isOnline())
+        trySend(isOnlineSync())
         
         awaitClose {
             connectivityManager.unregisterNetworkCallback(callback)

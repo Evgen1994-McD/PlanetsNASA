@@ -37,10 +37,10 @@ class ApodRepository(private val context: Context) {
     fun getApodPagingFlow(): Flow<PagingData<ApodItem>> {
         return Pager(
             config = PagingConfig(
-                pageSize = 10,
+                pageSize = 8,
                 enablePlaceholders = false,
                 prefetchDistance = 3,
-                initialLoadSize = 20
+                initialLoadSize = 8
             ),
             pagingSourceFactory = { 
                 // Создаем новый экземпляр PagingSource для каждого вызова
