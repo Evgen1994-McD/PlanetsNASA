@@ -47,16 +47,14 @@ fun BottomNavigationBar(navController: NavController) {
                 selected = currentRoute == item.route,
                 onClick = {
                     navController.navigate(item.route) {
-                        // Pop up to the start destination of the graph to
-                        // avoid building up a large stack of destinations
-                        // on the back stack as users select items
+                        // Очищаем весь стек навигации при переходе между экранами Bottom Menu
                         popUpTo(navController.graph.startDestinationId) {
-                            saveState = true
+                            inclusive = true
+                            saveState = true  // Сохраняем состояние экранов
                         }
-                        // Avoid multiple copies of the same destination when
-                        // reselecting the same item
+                        // Избегаем множественных копий одного экрана
                         launchSingleTop = true
-                        // Restore state when reselecting a previously selected item
+                        // Восстанавливаем состояние при повторном выборе экрана
                         restoreState = true
                     }
                 }

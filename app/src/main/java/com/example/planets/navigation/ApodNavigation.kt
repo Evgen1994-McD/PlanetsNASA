@@ -31,7 +31,10 @@ fun ApodNavigation(
                 viewModel = viewModel,
                 onApodClick = { apod ->
                     viewModel.selectApod(apod)
-                    navController.navigate("apod_detail")
+                    navController.navigate("apod_detail") {
+                        // Не сохраняем детальный экран в стеке
+                        launchSingleTop = true
+                    }
                 }
             )
         }
@@ -49,6 +52,15 @@ fun ApodNavigation(
                     },
                     viewModel = viewModel
                 )
+            } else {
+                // Если нет выбранного APOD, возвращаемся на главный экран
+                navController.navigate("see") {
+                    popUpTo(navController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
             }
         }
         
@@ -58,7 +70,10 @@ fun ApodNavigation(
                 viewModel = viewModel,
                 onApodClick = { apod ->
                     viewModel.selectApod(apod)
-                    navController.navigate("apod_detail")
+                    navController.navigate("apod_detail") {
+                        // Не сохраняем детальный экран в стеке
+                        launchSingleTop = true
+                    }
                 }
             )
         }

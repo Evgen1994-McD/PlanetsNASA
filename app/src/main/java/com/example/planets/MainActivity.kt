@@ -10,9 +10,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.planets.navigation.ApodNavigation
 import com.example.planets.ui.components.BottomNavigationBar
@@ -46,9 +48,18 @@ fun MainScreen() {
         ApodViewModel(context.applicationContext as android.app.Application)
     }
     
+    // Получаем текущий маршрут для определения, показывать ли Bottom Menu
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+    
+    // Скрываем Bottom Menu на детальном экране
+    val showBottomBar = currentRoute != "apod_detail"
+    
     Scaffold(
         bottomBar = {
-            BottomNavigationBar(navController = navController)
+            if (showBottomBar) {
+                BottomNavigationBar(navController = navController)
+            }
         }
     ) { paddingValues ->
         ApodNavigation(
