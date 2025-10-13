@@ -93,7 +93,7 @@ fun FavoriteCard(
         Box {
             Column {
                 SubcomposeAsyncImage(
-                    model = apod.hdurl ?: apod.url,
+                    model = apod.url,
                     contentDescription = apod.title,
                     modifier = Modifier
                         .fillMaxWidth()

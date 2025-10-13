@@ -16,12 +16,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.SubcomposeAsyncImage
+import coil.request.ImageRequest
 import com.example.planets.R
 import com.example.planets.data.model.ApodItem
 import com.example.planets.ui.components.GeneralErrorScreen
@@ -228,6 +230,8 @@ fun ApodCard(
     // Check if item is favorite
     LaunchedEffect(apod.date) {
         isFavorite = viewModel.isFavorite(apod.date)
+        println("ApodCard: Loading image for ${apod.title}")
+        println("ApodCard: Image URL: ${apod.url}")
     }
     
     Card(
@@ -241,7 +245,11 @@ fun ApodCard(
                 modifier = Modifier.fillMaxSize()
             ) {
                 SubcomposeAsyncImage(
-                    model = apod.url,
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(apod.url)
+                        .memoryCacheKey(apod.url)
+                        .diskCacheKey(apod.url)
+                        .build(),
                     contentDescription = apod.title,
                     modifier = Modifier
                         .fillMaxWidth()
