@@ -28,7 +28,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.example.planets.R
-import com.example.planets.data.model.ApodItem
+import com.example.planets.domain.model.Apod
 import com.example.planets.ui.components.GeneralErrorScreen
 import com.example.planets.ui.components.HttpErrorScreen
 import com.example.planets.ui.components.NetworkErrorScreen
@@ -39,7 +39,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ApodListScreen(
     viewModel: ApodViewModel,
-    onApodClick: (ApodItem) -> Unit
+    onApodClick: (Apod) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     
@@ -265,7 +265,7 @@ fun ApodListScreen(
 
 @Composable
 fun ApodCard(
-    apod: ApodItem,
+    apod: Apod,
     onClick: () -> Unit,
     viewModel: ApodViewModel
 ) {

@@ -19,6 +19,11 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * @deprecated Используйте ApodRepositoryImpl вместо этого класса
+ * Этот класс оставлен для обратной совместимости
+ */
+@Deprecated("Используйте ApodRepositoryImpl из Domain Layer")
 class ApodRepository(private val context: Context) {
     
     private val apiService = ApiClient.nasaApiService
