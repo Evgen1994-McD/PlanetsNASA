@@ -19,8 +19,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.planets.navigation.ApodNavigation
 import com.example.planets.ui.components.BottomNavigationBar
 import com.example.planets.ui.theme.PlanetsTheme
-import com.example.planets.ui.viewmodel.ApodViewModelFactory
+import com.example.planets.ui.viewmodel.ApodViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,10 +44,7 @@ class MainActivity : ComponentActivity() {
 fun MainScreen() {
     val context = LocalContext.current
     val navController = rememberNavController()
-    val viewModel: ApodViewModel = viewModel(
-        key = "apod_viewmodel",
-        factory = ApodViewModelFactory(context.applicationContext as android.app.Application)
-    )
+    val viewModel: ApodViewModel = viewModel()
     
     // Получаем текущий маршрут для определения, показывать ли Bottom Menu
     val navBackStackEntry by navController.currentBackStackEntryAsState()

@@ -23,14 +23,14 @@ import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import com.example.planets.R
-import com.example.planets.data.model.ApodItem
+import com.example.planets.domain.model.Apod
 import com.example.planets.ui.viewmodel.ApodViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ApodDetailScreen(
-    apod: ApodItem,
+    apod: Apod,
     onBackClick: () -> Unit,
     viewModel: ApodViewModel
 ) {

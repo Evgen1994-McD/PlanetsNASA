@@ -6,7 +6,9 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.example.planets.data.api.NasaApiService
 import com.example.planets.data.database.ApodDao
-import com.example.planets.data.mapper.ApodMapper
+import com.example.planets.data.mapper.ApodMapper.toDomain
+import com.example.planets.data.mapper.ApodMapper.toEntity
+import com.example.planets.data.mapper.ApodMapper.toFavoriteEntity
 import com.example.planets.data.paging.ApodPagingSource
 import com.example.planets.domain.model.Apod
 import com.example.planets.domain.repository.ApodRepository

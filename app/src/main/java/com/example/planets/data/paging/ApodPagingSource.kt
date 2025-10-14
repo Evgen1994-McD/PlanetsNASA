@@ -4,28 +4,27 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.example.planets.data.api.NasaApiService
 import com.example.planets.data.database.ApodDao
-import com.example.planets.data.database.toApodEntity
-import com.example.planets.data.model.ApodItem
-import com.example.planets.data.model.toApodItem
+import com.example.planets.data.mapper.ApodMapper.toDomain
+import com.example.planets.data.mapper.ApodMapper.toEntity
+import com.example.planets.data.repository.ApodRepositoryImpl
+import com.example.planets.domain.model.Apod
 import com.example.planets.utils.NetworkMonitor
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 class ApodPagingSource(
     private val apiService: NasaApiService,
     private val apodDao: ApodDao,
     private val networkMonitor: NetworkMonitor,
-    private val repository: com.example.planets.data.repository.ApodRepository
-) : PagingSource<Int, ApodItem>() {
+    private val repository: ApodRepositoryImpl
+) : PagingSource<Int, Apod>() {
 
     companion object {
         private const val API_KEY = "cVsJ9alkirbS7Jmj5bA3zFHdopkvdEqnKG45p34o"
     }
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ApodItem> {
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Apod> {
         return withContext(Dispatchers.IO) {
             try {
                 val page = params.key ?: 0
@@ -34,12 +33,12 @@ class ApodPagingSource(
                 // 1. Сначала проверяем, есть ли данные в кэше
                 val offset = page * pageSize
                 val cachedApods = apodDao.getRecentCachedApods(pageSize, offset)
-                val cachedItems = cachedApods.map { it.toApodItem() }
+                val cachedItems = cachedApods.map { it.toDomain() }
 
                 // 2. Проверяем подключение к интернету
                 val isOnline = networkMonitor.isOnline()
 
-                val result: LoadResult<Int, ApodItem> = if (isOnline) {
+                val result: LoadResult<Int, Apod> = if (isOnline) {
                     // 3. Если есть интернет, пытаемся загрузить с API
                     try {
                         val response = apiService.getApodList(API_KEY, pageSize)
@@ -47,14 +46,14 @@ class ApodPagingSource(
                         if (response.isSuccessful) {
                             response.body()?.let { apodResponseList ->
                                 
-                                val apodItems = mutableListOf<ApodItem>()
+                                val apodItems = mutableListOf<Apod>()
                                 apodResponseList.forEach { apodResponse ->
-                                    val apodItem = apodResponse.toApodItem()
-                                    apodItems.add(apodItem)
+                                    val apod = apodResponse.toDomain()
+                                    apodItems.add(apod)
                                     
                                     // Кэшируем каждый элемент
                                     try {
-                                        apodDao.insertApod(apodItem.toApodEntity())
+                                        apodDao.insertApod(apod.toEntity())
                                     } catch (e: Exception) {
                                         // Ignore cache errors
                                     }
@@ -130,7 +129,7 @@ class ApodPagingSource(
         }
     }
 
-    override fun getRefreshKey(state: PagingState<Int, ApodItem>): Int? {
+    override fun getRefreshKey(state: PagingState<Int, Apod>): Int? {
         return state.anchorPosition?.let { anchorPosition ->
             val anchorPage = state.closestPageToPosition(anchorPosition)
             anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)

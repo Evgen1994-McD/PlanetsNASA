@@ -10,7 +10,6 @@ import com.example.planets.data.database.toApodEntity
 import com.example.planets.data.database.toFavoriteEntity
 import com.example.planets.data.model.ApodItem
 import com.example.planets.data.model.toApodItem
-import com.example.planets.data.paging.ApodPagingSource
 import com.example.planets.utils.NetworkMonitor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -39,20 +38,12 @@ class ApodRepository(private val context: Context) {
     private var lastLoadTime = 0L
     private val cacheTimeout = 5 * 60 * 1000L // 5 минут
     
+    /*
+    @Deprecated("Используйте ApodRepositoryImpl.getApodPagingFlow()")
     fun getApodPagingFlow(): Flow<PagingData<ApodItem>> {
-        return Pager(
-            config = PagingConfig(
-                pageSize = 4,
-                enablePlaceholders = false,
-                prefetchDistance = 2,
-                initialLoadSize = 4
-            ),
-            pagingSourceFactory = { 
-                // Создаем новый экземпляр PagingSource для каждого вызова
-                ApodPagingSource(apiService, apodDao, networkMonitor, this)
-            }
-        ).flow
+        throw NotImplementedError("Используйте ApodRepositoryImpl вместо этого класса")
     }
+    */
     
     suspend fun cacheApod(apod: ApodItem) = withContext(Dispatchers.IO) {
         apodDao.insertApod(apod.toApodEntity())
