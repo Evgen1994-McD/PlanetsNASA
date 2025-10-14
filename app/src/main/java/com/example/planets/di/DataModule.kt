@@ -11,6 +11,7 @@ import com.example.planets.data.repository.MockApodRepositoryImpl
 import com.example.planets.data.repository.ThemeRepositoryImpl
 import com.example.planets.domain.repository.ApodRepository
 import com.example.planets.domain.repository.ThemeRepository
+import com.example.planets.domain.usecase.NotifyCacheClearedUseCase
 import com.example.planets.utils.NetworkMonitor
 import dagger.Module
 import dagger.Provides
@@ -52,10 +53,11 @@ object DataModule {
         apiService: NasaApiService,
         apodDao: ApodDao,
         networkMonitor: NetworkMonitor,
+        notifyCacheClearedUseCase: NotifyCacheClearedUseCase,
         @ApplicationContext context: Context
     ): ApodRepository {
         return if (BuildConfig.USE_MOCK_DATA) {
-            MockApodRepositoryImpl(apodDao, networkMonitor, context)
+            MockApodRepositoryImpl(apodDao, networkMonitor, context, notifyCacheClearedUseCase)
         } else {
             ApodRepositoryImpl(apiService, apodDao, networkMonitor, context)
         }

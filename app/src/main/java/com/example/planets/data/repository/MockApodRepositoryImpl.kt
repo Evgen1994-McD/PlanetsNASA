@@ -1,6 +1,7 @@
 package com.example.planets.data.repository
 
 import android.content.Context
+import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -13,6 +14,7 @@ import com.example.planets.data.mock.MockApodData
 import com.example.planets.data.paging.MockApodPagingSource
 import com.example.planets.domain.model.Apod
 import com.example.planets.domain.repository.ApodRepository
+import com.example.planets.domain.usecase.NotifyCacheClearedUseCase
 import com.example.planets.utils.NetworkMonitor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -27,8 +29,13 @@ import javax.inject.Singleton
 class MockApodRepositoryImpl @Inject constructor(
     private val apodDao: ApodDao,
     private val networkMonitor: NetworkMonitor,
-    private val context: Context
+    private val context: Context,
+    private val notifyCacheClearedUseCase: NotifyCacheClearedUseCase
 ) : ApodRepository {
+
+    companion object {
+        private const val TAG = "MockApodRepositoryImpl"
+    }
 
     private val cachedData = mutableListOf<Apod>()
     private var lastLoadTime = 0L
@@ -121,22 +128,30 @@ class MockApodRepositoryImpl @Inject constructor(
 
     override suspend fun clearOldCache(): Result<Unit> = withContext(Dispatchers.IO) {
         try {
+            Log.d(TAG, "Clearing old cache...")
             val oneWeekAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000)
             apodDao.deleteOldApods(oneWeekAgo)
+            notifyCacheClearedUseCase.notifyCacheCleared()
+            Log.d(TAG, "Old cache cleared successfully")
             Result.success(Unit)
         } catch (e: Exception) {
+            Log.e(TAG, "Error clearing old cache", e)
             Result.failure(e)
         }
     }
 
     override suspend fun clearAllCache(): Result<Unit> = withContext(Dispatchers.IO) {
         try {
+            Log.d(TAG, "Clearing all cache...")
             cachedData.clear()
             lastLoadTime = 0L
             apodDao.deleteAllApods()
             apodDao.deleteAllFavorites()
+            notifyCacheClearedUseCase.notifyCacheCleared()
+            Log.d(TAG, "All cache cleared successfully")
             Result.success(Unit)
         } catch (e: Exception) {
+            Log.e(TAG, "Error clearing all cache", e)
             Result.failure(e)
         }
     }
