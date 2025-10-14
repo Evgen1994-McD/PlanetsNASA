@@ -1,5 +1,6 @@
 package com.example.planets.data.paging
 
+import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.example.planets.data.api.NasaApiService
@@ -22,6 +23,7 @@ class ApodPagingSource(
 
     companion object {
         private const val API_KEY = "cVsJ9alkirbS7Jmj5bA3zFHdopkvdEqnKG45p34o"
+        private const val TAG = "ApodPagingSource"
     }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Apod> {
@@ -29,19 +31,25 @@ class ApodPagingSource(
             try {
                 val page = params.key ?: 0
                 val pageSize = params.loadSize
+                
+                Log.d(TAG, "Loading page $page with size $pageSize")
 
                 // 1. Сначала проверяем, есть ли данные в кэше
                 val offset = page * pageSize
                 val cachedApods = apodDao.getRecentCachedApods(pageSize, offset)
                 val cachedItems = cachedApods.map { it.toDomain() }
+                Log.d(TAG, "Found ${cachedItems.size} cached items")
 
                 // 2. Проверяем подключение к интернету
                 val isOnline = networkMonitor.isOnline()
+                Log.d(TAG, "Is online: $isOnline")
 
                 val result: LoadResult<Int, Apod> = if (isOnline) {
                     // 3. Если есть интернет, пытаемся загрузить с API
                     try {
+                        Log.d(TAG, "Making API request to NASA...")
                         val response = apiService.getApodList(API_KEY, pageSize)
+                        Log.d(TAG, "API response code: ${response.code()}")
                         
                         if (response.isSuccessful) {
                             response.body()?.let { apodResponseList ->
