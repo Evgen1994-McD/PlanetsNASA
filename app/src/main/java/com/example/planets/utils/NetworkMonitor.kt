@@ -19,13 +19,11 @@ class NetworkMonitor(private val context: Context) {
     suspend fun isOnline(): Boolean = withContext(Dispatchers.IO) {
         val hasNetworkConnection = isOnlineSync()
         if (!hasNetworkConnection) {
-            println("NetworkMonitor: No network connection detected")
             return@withContext false
         }
         
         // Дополнительная проверка - пытаемся подключиться к интернету
         val hasInternetAccess = checkInternetAccess()
-        println("NetworkMonitor: Network connection: $hasNetworkConnection, Internet access: $hasInternetAccess")
         
         hasInternetAccess
     }
@@ -39,7 +37,6 @@ class NetworkMonitor(private val context: Context) {
             connection.readTimeout = 1000
             connection.responseCode == 200
         } catch (e: Exception) {
-            println("NetworkMonitor: Internet access check failed: ${e.message}")
             false
         }
     }
@@ -61,7 +58,6 @@ class NetworkMonitor(private val context: Context) {
         }
         
         val isOnline = hasInternet && hasTransport
-        println("NetworkMonitor: hasInternet=$hasInternet, isValidated=$isValidated, hasTransport=$hasTransport, isOnline=$isOnline")
         
         return isOnline
     }

@@ -40,8 +40,6 @@ fun ApodDetailScreen(
     // Check if item is favorite
     LaunchedEffect(apod.date) {
         isFavorite = viewModel.isFavorite(apod.date)
-        println("ApodDetailScreen: Loading image for ${apod.title}")
-        println("ApodDetailScreen: Image URL: ${apod.url}")
     }
     Scaffold(
         topBar = {

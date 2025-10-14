@@ -105,11 +105,6 @@ class ApodRepository(private val context: Context) {
     }
     
     suspend fun clearAllCache() = withContext(Dispatchers.IO) {
-        val apodCountBefore = apodDao.getCachedApodsCount()
-        val favoritesCountBefore = apodDao.getFavoritesCount()
-        println("ApodRepository: APOD cache count before clear: $apodCountBefore")
-        println("ApodRepository: Favorites count before clear: $favoritesCountBefore")
-        
         // Очищаем память
         cachedData.clear()
         lastLoadTime = 0L
@@ -117,12 +112,6 @@ class ApodRepository(private val context: Context) {
         // Очищаем базу данных - удаляем все APOD и избранные
         apodDao.deleteAllApods()
         apodDao.deleteAllFavorites()
-        
-        val apodCountAfter = apodDao.getCachedApodsCount()
-        val favoritesCountAfter = apodDao.getFavoritesCount()
-        println("ApodRepository: APOD cache count after clear: $apodCountAfter")
-        println("ApodRepository: Favorites count after clear: $favoritesCountAfter")
-        println("ApodRepository: All cache and favorites cleared successfully")
     }
     
     suspend fun getApodList(count: Int = 10): Result<List<ApodItem>> = withContext(Dispatchers.IO) {

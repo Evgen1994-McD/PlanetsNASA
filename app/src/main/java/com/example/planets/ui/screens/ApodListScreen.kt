@@ -275,8 +275,6 @@ fun ApodCard(
     // Check if item is favorite
     LaunchedEffect(apod.date) {
         isFavorite = viewModel.isFavorite(apod.date)
-        println("ApodCard: Loading image for ${apod.title}")
-        println("ApodCard: Image URL: ${apod.url}")
     }
     
     Card(
