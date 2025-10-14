@@ -12,6 +12,7 @@ import com.example.planets.data.mapper.ApodMapper.toFavoriteEntity
 import com.example.planets.data.paging.ApodPagingSource
 import com.example.planets.domain.model.Apod
 import com.example.planets.domain.repository.ApodRepository
+import com.example.planets.domain.usecase.NotifyCacheClearedUseCase
 import com.example.planets.utils.NetworkMonitor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -29,7 +30,8 @@ class ApodRepositoryImpl @Inject constructor(
     private val apiService: NasaApiService,
     private val apodDao: ApodDao,
     private val networkMonitor: NetworkMonitor,
-    private val context: Context
+    private val context: Context,
+    private val notifyCacheClearedUseCase: NotifyCacheClearedUseCase
 ) : ApodRepository {
     
     // API ключ для тестирования
@@ -136,6 +138,7 @@ class ApodRepositoryImpl @Inject constructor(
         try {
             val oneWeekAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000)
             apodDao.deleteOldApods(oneWeekAgo)
+            notifyCacheClearedUseCase.notifyCacheCleared()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -151,6 +154,7 @@ class ApodRepositoryImpl @Inject constructor(
             // Очищаем базу данных - удаляем все APOD и избранные
             apodDao.deleteAllApods()
             apodDao.deleteAllFavorites()
+            notifyCacheClearedUseCase.notifyCacheCleared()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
