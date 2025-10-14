@@ -77,7 +77,7 @@ app/src/main/java/com/example/planets/
 │   ├── error/           # Доменные ошибки
 │   ├── model/           # Доменные модели
 │   ├── repository/      # Интерфейс репозитория
-│   └── usecase/         # Use Cases
+│   └── usecase/         # Use Cases (интерфейсы + реализации)
 ├── navigation/          # Навигация (Compose)
 ├── presentation/
 │   ├── components/      # Переиспользуемые компоненты
@@ -137,6 +137,7 @@ app/src/main/java/com/example/planets/
 
 - **Clean Architecture** - четкое разделение слоев
 - **Dagger Hilt** - автоматическая инъекция зависимостей
+- **Use Case Interfaces** - интерфейсы для всех бизнес-логики
 - **Paging 3** - эффективная пагинация с кэшированием
 - **Room** - локальное хранение данных
 - **Retrofit** - сетевые запросы с логированием

@@ -5,18 +5,18 @@ import com.example.planets.domain.repository.ApodRepository
 import javax.inject.Inject
 
 /**
- * Use Case для получения детальной информации об APOD
- * Инкапсулирует бизнес-логику получения APOD по дате
+ * Интерфейс для получения детальной информации об APOD по дате
  */
-class GetApodDetailUseCase @Inject constructor(
+interface GetApodDetailUseCase {
+    suspend operator fun invoke(date: String): Result<Apod>
+}
+
+
+class GetApodDetailUseCaseImpl @Inject constructor(
     private val repository: ApodRepository
-) {
-    /**
-     * Выполняет получение APOD по дате
-     * @param date дата в формате YYYY-MM-DD
-     * @return Result с APOD или ошибкой
-     */
-    suspend operator fun invoke(date: String): Result<Apod> {
+) : GetApodDetailUseCase {
+    
+    override suspend operator fun invoke(date: String): Result<Apod> {
         return repository.getApodByDate(date)
     }
 }

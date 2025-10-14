@@ -7,17 +7,17 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 /**
- * Use Case для получения списка APOD с пагинацией
- * Инкапсулирует бизнес-логику получения данных
+ * Интерфейс для получения списка APOD с пагинацией
  */
-class GetApodListUseCase @Inject constructor(
+interface GetApodListUseCase {
+    operator fun invoke(): Flow<PagingData<Apod>>
+}
+
+class GetApodListUseCaseImpl @Inject constructor(
     private val repository: ApodRepository
-) {
-    /**
-     * Выполняет получение списка APOD
-     * @return Flow с пагинированными данными APOD
-     */
-    operator fun invoke(): Flow<PagingData<Apod>> {
+) : GetApodListUseCase {
+    
+    override operator fun invoke(): Flow<PagingData<Apod>> {
         return repository.getApodPagingFlow()
     }
 }

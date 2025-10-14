@@ -102,6 +102,24 @@ class ApodRepositoryImpl @Inject constructor(
         apodDao.isFavorite(date)
     }
     
+    override suspend fun addToFavorites(apod: Apod): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            apodDao.insertFavorite(apod.toFavoriteEntity())
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    override suspend fun removeFromFavorites(date: String): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            apodDao.deleteFavoriteByDate(date)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
     override fun getFavoritesFlow(): Flow<List<Apod>> {
         return apodDao.getAllFavorites().map { favorites ->
             favorites.map { it.toDomain() }
@@ -116,19 +134,29 @@ class ApodRepositoryImpl @Inject constructor(
         apodDao.getRecentCachedApods(50).map { it.toDomain() }
     }
     
-    override suspend fun clearOldCache() = withContext(Dispatchers.IO) {
-        val oneWeekAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000)
-        apodDao.deleteOldApods(oneWeekAgo)
+    override suspend fun clearOldCache(): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val oneWeekAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000)
+            apodDao.deleteOldApods(oneWeekAgo)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
     
-    override suspend fun clearAllCache() = withContext(Dispatchers.IO) {
-        // Очищаем память
-        cachedData.clear()
-        lastLoadTime = 0L
-        
-        // Очищаем базу данных - удаляем все APOD и избранные
-        apodDao.deleteAllApods()
-        apodDao.deleteAllFavorites()
+    override suspend fun clearAllCache(): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            // Очищаем память
+            cachedData.clear()
+            lastLoadTime = 0L
+            
+            // Очищаем базу данных - удаляем все APOD и избранные
+            apodDao.deleteAllApods()
+            apodDao.deleteAllFavorites()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
     
     // Методы для работы с кэшем (используются PagingSource)

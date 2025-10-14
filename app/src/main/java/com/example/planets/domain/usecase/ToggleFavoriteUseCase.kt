@@ -5,17 +5,25 @@ import com.example.planets.domain.repository.ApodRepository
 import javax.inject.Inject
 
 /**
- * Use Case для переключения статуса избранного APOD
- * Инкапсулирует бизнес-логику управления избранными элементами
+ * Интерфейс для переключения статуса избранного APOD
  */
-class ToggleFavoriteUseCase @Inject constructor(
+interface ToggleFavoriteUseCase {
+    suspend operator fun invoke(apod: Apod)
+}
+
+/**
+ * Реализация Use Case для переключения статуса избранного APOD
+ */
+class ToggleFavoriteUseCaseImpl @Inject constructor(
     private val repository: ApodRepository
-) {
-    /**
-     * Выполняет переключение статуса избранного для APOD
-     * @param apod APOD для переключения
-     */
-    suspend operator fun invoke(apod: Apod) {
-        repository.toggleFavorite(apod)
+) : ToggleFavoriteUseCase {
+    
+    override suspend operator fun invoke(apod: Apod) {
+        val isFavorite = repository.isFavorite(apod.date)
+        if (isFavorite) {
+            repository.removeFromFavorites(apod.date).getOrThrow()
+        } else {
+            repository.addToFavorites(apod).getOrThrow()
+        }
     }
 }

@@ -6,17 +6,18 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 /**
- * Use Case для получения списка избранных APOD
- * Инкапсулирует бизнес-логику получения избранных элементов
+ * Интерфейс для получения списка избранных APOD
  */
-class GetFavoritesUseCase @Inject constructor(
+interface GetFavoritesUseCase {
+    operator fun invoke(): Flow<List<Apod>>
+}
+
+
+class GetFavoritesUseCaseImpl @Inject constructor(
     private val repository: ApodRepository
-) {
-    /**
-     * Выполняет получение списка избранных APOD
-     * @return Flow со списком избранных APOD
-     */
-    operator fun invoke(): Flow<List<Apod>> {
+) : GetFavoritesUseCase {
+    
+    override operator fun invoke(): Flow<List<Apod>> {
         return repository.getFavoritesFlow()
     }
 }
