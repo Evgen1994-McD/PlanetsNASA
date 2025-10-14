@@ -9,10 +9,13 @@ import com.example.planets.domain.usecase.GetApodListUseCase
 import com.example.planets.domain.usecase.IsFavoriteUseCase
 import com.example.planets.domain.usecase.ToggleFavoriteUseCase
 import com.example.planets.domain.usecase.NotifyCacheClearedUseCase
+import com.example.planets.domain.usecase.InvalidatePagingSourceUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,7 +26,8 @@ class ApodListViewModel @Inject constructor(
     private val getApodListUseCase: GetApodListUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
     private val isFavoriteUseCase: IsFavoriteUseCase,
-    private val notifyCacheClearedUseCase: NotifyCacheClearedUseCase
+    private val notifyCacheClearedUseCase: NotifyCacheClearedUseCase,
+    private val invalidatePagingSourceUseCase: InvalidatePagingSourceUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ApodListUiState())
@@ -32,8 +36,9 @@ class ApodListViewModel @Inject constructor(
     private val _refreshTrigger = MutableStateFlow(0)
     val refreshTrigger: StateFlow<Int> = _refreshTrigger.asStateFlow()
 
-    val apodPagingFlow: Flow<PagingData<Apod>> = getApodListUseCase()
-        .cachedIn(viewModelScope)
+    val apodPagingFlow: Flow<PagingData<Apod>> = getApodListUseCase.getRefreshableFlow(
+        refreshTrigger.map { Unit }
+    ).cachedIn(viewModelScope)
 
     init {
         // Слушаем уведомления об очистке кэша
@@ -41,6 +46,14 @@ class ApodListViewModel @Inject constructor(
             notifyCacheClearedUseCase.getCacheClearedFlow().collect {
                 // При очистке кэша сбрасываем состояние ошибок и обновляем данные
                 clearError()
+                _refreshTrigger.value++
+            }
+        }
+        
+        // Слушаем инвалидацию PagingSource
+        viewModelScope.launch {
+            invalidatePagingSourceUseCase.invalidateTrigger.collect {
+                // При инвалидации PagingSource обновляем данные
                 _refreshTrigger.value++
             }
         }

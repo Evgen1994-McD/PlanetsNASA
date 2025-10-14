@@ -4,6 +4,7 @@ import androidx.paging.PagingData
 import com.example.planets.domain.model.Apod
 import com.example.planets.domain.repository.ApodRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
 /**
@@ -11,6 +12,7 @@ import javax.inject.Inject
  */
 interface GetApodListUseCase {
     operator fun invoke(): Flow<PagingData<Apod>>
+    fun getRefreshableFlow(refreshTrigger: Flow<Unit>): Flow<PagingData<Apod>>
 }
 
 class GetApodListUseCaseImpl @Inject constructor(
@@ -19,5 +21,11 @@ class GetApodListUseCaseImpl @Inject constructor(
     
     override operator fun invoke(): Flow<PagingData<Apod>> {
         return repository.getApodPagingFlow()
+    }
+    
+    override fun getRefreshableFlow(refreshTrigger: Flow<Unit>): Flow<PagingData<Apod>> {
+        return refreshTrigger.flatMapLatest {
+            repository.getApodPagingFlow()
+        }
     }
 }

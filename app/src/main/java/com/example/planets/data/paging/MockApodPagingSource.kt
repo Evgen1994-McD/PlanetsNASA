@@ -42,6 +42,10 @@ class MockApodPagingSource(
                 val cachedApods = apodDao.getRecentCachedApods(pageSize, offset)
                 val cachedItems = cachedApods.map { it.toDomain() }
                 Log.d(TAG, "Found ${cachedItems.size} cached items")
+                
+                // Проверяем общее количество элементов в кэше
+                val totalCachedCount = apodDao.getTotalCachedCount()
+                Log.d(TAG, "Total cached items: $totalCachedCount")
 
                 // 2. Проверяем подключение к интернету
                 val isOnline = networkMonitor.isOnline()
@@ -52,10 +56,10 @@ class MockApodPagingSource(
                     try {
                         // Имитируем задержку сети
                         kotlinx.coroutines.delay(1000)
-                        
+
                         val startIndex = page * pageSize
                         val endIndex = minOf(startIndex + pageSize, MockApodData.mockApods.size)
-                        
+
                         if (startIndex >= MockApodData.mockApods.size) {
                             Log.d(TAG, "No more mock data available")
                             LoadResult.Page(
@@ -66,7 +70,7 @@ class MockApodPagingSource(
                         } else {
                             val mockData = MockApodData.mockApods.subList(startIndex, endIndex)
                             Log.d(TAG, "Loaded ${mockData.size} mock items: ${mockData.map { it.title }}")
-                            
+
                             // Кэшируем каждый элемент
                             mockData.forEach { apod ->
                                 try {
@@ -84,12 +88,12 @@ class MockApodPagingSource(
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, "Error loading mock data", e)
-                        
+
                         // Re-throw cancellation exceptions
                         if (e is CancellationException) {
                             throw e
                         }
-                        
+
                         // Сетевая ошибка - проверяем кэш
                         if (cachedItems.isNotEmpty()) {
                             LoadResult.Page(
