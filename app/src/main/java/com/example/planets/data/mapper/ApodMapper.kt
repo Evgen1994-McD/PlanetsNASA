@@ -2,7 +2,6 @@ package com.example.planets.data.mapper
 
 import com.example.planets.data.database.ApodEntity
 import com.example.planets.data.database.FavoriteEntity
-import com.example.planets.data.model.ApodItem
 import com.example.planets.data.model.ApodResponse
 import com.example.planets.domain.model.Apod
 
@@ -81,37 +80,6 @@ object ApodMapper {
             explanation = this.explanation,
             url = this.url,
             hdUrl = this.hdurl,
-            mediaType = this.mediaType,
-            serviceVersion = this.serviceVersion
-        )
-    }
-    
-    // Обратная совместимость с существующим кодом
-    /**
-     * Преобразует ApodItem (старая модель) в Domain модель Apod
-     */
-    fun ApodItem.toDomain(): Apod {
-        return Apod(
-            date = this.date,
-            title = this.title,
-            explanation = this.explanation,
-            url = this.url,
-            hdUrl = this.hdurl,
-            mediaType = this.mediaType,
-            serviceVersion = this.serviceVersion
-        )
-    }
-    
-    /**
-     * Преобразует Domain модель Apod в ApodItem (старая модель)
-     */
-    fun Apod.toApodItem(): ApodItem {
-        return ApodItem(
-            date = this.date,
-            title = this.title,
-            explanation = this.explanation,
-            url = this.url,
-            hdurl = this.hdUrl,
             mediaType = this.mediaType,
             serviceVersion = this.serviceVersion
         )
