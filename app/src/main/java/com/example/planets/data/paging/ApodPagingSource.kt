@@ -47,7 +47,6 @@ class ApodPagingSource(
                 val result: LoadResult<Int, Apod> = if (isOnline) {
                     // 3. Если есть интернет, пытаемся загрузить с API
                     try {
-                        Log.d(TAG, "Making API request to NASA...")
                         val response = apiService.getApodList(API_KEY, pageSize)
                         Log.d(TAG, "API response code: ${response.code()}")
                         
