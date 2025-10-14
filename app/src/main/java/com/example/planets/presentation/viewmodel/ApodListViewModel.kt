@@ -90,11 +90,6 @@ class ApodListViewModel @Inject constructor(
     suspend fun isFavorite(date: String): Boolean {
         return isFavoriteUseCase(date)
     }
-
-    fun refreshData() {
-        // Метод для принудительного обновления данных
-        // PagingData автоматически обновится при изменении источника
-    }
 }
 
 data class ApodListUiState(

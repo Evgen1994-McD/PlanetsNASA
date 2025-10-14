@@ -17,8 +17,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -160,13 +158,6 @@ class ApodRepositoryImpl @Inject constructor(
     }
     
     // Методы для работы с кэшем (используются PagingSource)
-    fun getCachedData(): List<Apod> = cachedData.toList()
-    
-    fun isCacheValid(): Boolean {
-        val currentTime = System.currentTimeMillis()
-        return (currentTime - lastLoadTime) < cacheTimeout && cachedData.isNotEmpty()
-    }
-    
     fun updateCache(data: List<Apod>, isFirstPage: Boolean = false) {
         if (isFirstPage) {
             cachedData.clear()
@@ -175,10 +166,5 @@ class ApodRepositoryImpl @Inject constructor(
             cachedData.addAll(data)
         }
         lastLoadTime = System.currentTimeMillis()
-    }
-    
-    fun clearCache() {
-        cachedData.clear()
-        lastLoadTime = 0L
     }
 }

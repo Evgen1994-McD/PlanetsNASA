@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.planets.navigation.ApodNavigation
@@ -45,7 +44,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen() {
-    val context = LocalContext.current
     val navController = rememberNavController()
     val apodListViewModel: ApodListViewModel = viewModel()
     val apodDetailViewModel: ApodDetailViewModel = viewModel()

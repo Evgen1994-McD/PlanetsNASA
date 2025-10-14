@@ -7,7 +7,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.planets.domain.model.Apod
 import com.example.planets.presentation.screens.ApodDetailScreen
 import com.example.planets.presentation.screens.ApodListScreen
 import com.example.planets.presentation.screens.FavoritesScreen
