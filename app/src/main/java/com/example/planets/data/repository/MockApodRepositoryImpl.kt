@@ -39,9 +39,12 @@ class MockApodRepositoryImpl @Inject constructor(
             config = PagingConfig(
                 pageSize = 4,
                 enablePlaceholders = false,
-                prefetchDistance = 2
+                prefetchDistance = 2,
+                initialLoadSize = 4
             ),
-            pagingSourceFactory = { MockApodPagingSource() }
+            pagingSourceFactory = { 
+                MockApodPagingSource(apodDao, networkMonitor)
+            }
         ).flow
     }
 
