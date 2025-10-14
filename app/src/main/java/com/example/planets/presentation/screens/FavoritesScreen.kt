@@ -18,12 +18,12 @@ import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import com.example.planets.R
 import com.example.planets.domain.model.Apod
-import com.example.planets.presentation.viewmodel.ApodViewModel
+import com.example.planets.presentation.viewmodel.FavoritesViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun FavoritesScreen(
-    viewModel: ApodViewModel,
+    viewModel: FavoritesViewModel,
     onApodClick: (Apod) -> Unit
 ) {
     val favorites by viewModel.favoritesFlow.collectAsState(initial = emptyList())
@@ -81,7 +81,7 @@ fun FavoritesScreen(
 @Composable
 fun FavoriteCard(
     apod: Apod,
-    viewModel: ApodViewModel,
+    viewModel: FavoritesViewModel,
     onClick: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()

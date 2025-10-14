@@ -10,12 +10,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.planets.presentation.viewmodel.ApodViewModel
+import com.example.planets.presentation.viewmodel.SettingsViewModel
 
 @Composable
-fun SettingsScreen(viewModel: ApodViewModel) {
+fun SettingsScreen(viewModel: SettingsViewModel) {
+    val uiState by viewModel.uiState.collectAsState()
     var showClearCacheDialog by remember { mutableStateOf(false) }
-    var showSuccessMessage by remember { mutableStateOf(false) }
     
     Column(
         modifier = Modifier
@@ -98,7 +98,6 @@ fun SettingsScreen(viewModel: ApodViewModel) {
                     onClick = {
                         viewModel.clearAllCache()
                         showClearCacheDialog = false
-                        showSuccessMessage = true
                     }
                 ) {
                     Text("Очистить")
@@ -114,19 +113,19 @@ fun SettingsScreen(viewModel: ApodViewModel) {
         )
     }
     
-    // Диалог успешной очистки
-    if (showSuccessMessage) {
+    // Диалог успешной очистки или ошибки
+    if (uiState.successMessage != null || uiState.error != null) {
         AlertDialog(
-            onDismissRequest = { showSuccessMessage = false },
+            onDismissRequest = { viewModel.clearMessages() },
             title = {
-                Text("Кэш очищен")
+                Text(if (uiState.successMessage != null) "Успешно" else "Ошибка")
             },
             text = {
-                Text("Все сохранённые APOD удалены из кэша и избранного. При следующей загрузке данные будут загружены заново.")
+                Text(uiState.successMessage ?: uiState.error ?: "")
             },
             confirmButton = {
                 TextButton(
-                    onClick = { showSuccessMessage = false }
+                    onClick = { viewModel.clearMessages() }
                 ) {
                     Text("ОК")
                 }

@@ -32,13 +32,13 @@ import com.example.planets.domain.model.Apod
 import com.example.planets.presentation.components.GeneralErrorScreen
 import com.example.planets.presentation.components.HttpErrorScreen
 import com.example.planets.presentation.components.NetworkErrorScreen
-import com.example.planets.presentation.viewmodel.ApodViewModel
+import com.example.planets.presentation.viewmodel.ApodListViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ApodListScreen(
-    viewModel: ApodViewModel,
+    viewModel: ApodListViewModel,
     onApodClick: (Apod) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -281,7 +281,7 @@ fun ApodListScreen(
 fun ApodCard(
     apod: Apod,
     onClick: () -> Unit,
-    viewModel: ApodViewModel
+    viewModel: ApodListViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
     var isFavorite by remember { mutableStateOf(false) }

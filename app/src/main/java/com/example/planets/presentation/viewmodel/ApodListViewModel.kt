@@ -5,9 +5,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.example.planets.domain.model.Apod
-import com.example.planets.domain.usecase.ClearCacheUseCase
 import com.example.planets.domain.usecase.GetApodListUseCase
-import com.example.planets.domain.usecase.GetFavoritesUseCase
 import com.example.planets.domain.usecase.IsFavoriteUseCase
 import com.example.planets.domain.usecase.ToggleFavoriteUseCase
 import kotlinx.coroutines.flow.Flow
@@ -20,32 +18,18 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class ApodViewModel @Inject constructor(
+class ApodListViewModel @Inject constructor(
     private val getApodListUseCase: GetApodListUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
-    private val isFavoriteUseCase: IsFavoriteUseCase,
-    private val getFavoritesUseCase: GetFavoritesUseCase,
-    private val clearCacheUseCase: ClearCacheUseCase
+    private val isFavoriteUseCase: IsFavoriteUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(ApodUiState())
-    val uiState: StateFlow<ApodUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(ApodListUiState())
+    val uiState: StateFlow<ApodListUiState> = _uiState.asStateFlow()
 
-    // Создаем PagingSource один раз и переиспользуем его
     val apodPagingFlow: Flow<PagingData<Apod>> = getApodListUseCase()
         .cachedIn(viewModelScope)
-    
-    // Favorites flow
-    val favoritesFlow: Flow<List<Apod>> = getFavoritesUseCase()
-    
-    fun selectApod(apod: Apod) {
-        _uiState.value = _uiState.value.copy(selectedApod = apod)
-    }
-    
-    fun clearSelectedApod() {
-        _uiState.value = _uiState.value.copy(selectedApod = null)
-    }
-    
+
     fun clearError() {
         _uiState.value = _uiState.value.copy(
             error = null,
@@ -55,7 +39,7 @@ class ApodViewModel @Inject constructor(
             isRetrying = false
         )
     }
-    
+
     fun setNetworkError() {
         _uiState.value = _uiState.value.copy(
             hasNetworkError = true,
@@ -63,7 +47,7 @@ class ApodViewModel @Inject constructor(
             isRetrying = false
         )
     }
-    
+
     fun setHttpError(errorCode: Int) {
         _uiState.value = _uiState.value.copy(
             hasHttpError = true,
@@ -72,41 +56,27 @@ class ApodViewModel @Inject constructor(
             isRetrying = false
         )
     }
-    
+
     fun setLoading(loading: Boolean) {
         _uiState.value = _uiState.value.copy(isLoading = loading)
     }
-    
+
     fun setRetrying(retrying: Boolean) {
         _uiState.value = _uiState.value.copy(isRetrying = retrying)
     }
-    
-    fun clearOldCache() {
-        viewModelScope.launch {
-            clearCacheUseCase.clearOldCache()
-        }
-    }
-    
-    fun clearAllCache() {
-        viewModelScope.launch {
-            clearCacheUseCase()
-        }
-    }
-    
-    // Favorites methods
+
     fun toggleFavorite(apod: Apod) {
         viewModelScope.launch {
             toggleFavoriteUseCase(apod)
         }
     }
-    
+
     suspend fun isFavorite(date: String): Boolean {
         return isFavoriteUseCase(date)
     }
 }
 
-data class ApodUiState(
-    val selectedApod: Apod? = null,
+data class ApodListUiState(
     val error: String? = null,
     val isLoading: Boolean = false,
     val isRetrying: Boolean = false,

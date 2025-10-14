@@ -19,7 +19,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.planets.navigation.ApodNavigation
 import com.example.planets.presentation.components.BottomNavigationBar
 import com.example.planets.presentation.theme.PlanetsTheme
-import com.example.planets.presentation.viewmodel.ApodViewModel
+import com.example.planets.presentation.viewmodel.ApodListViewModel
+import com.example.planets.presentation.viewmodel.ApodDetailViewModel
+import com.example.planets.presentation.viewmodel.FavoritesViewModel
+import com.example.planets.presentation.viewmodel.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -44,15 +47,18 @@ class MainActivity : ComponentActivity() {
 fun MainScreen() {
     val context = LocalContext.current
     val navController = rememberNavController()
-    val viewModel: ApodViewModel = viewModel()
-    
+    val apodListViewModel: ApodListViewModel = viewModel()
+    val apodDetailViewModel: ApodDetailViewModel = viewModel()
+    val favoritesViewModel: FavoritesViewModel = viewModel()
+    val settingsViewModel: SettingsViewModel = viewModel()
+
     // Получаем текущий маршрут для определения, показывать ли Bottom Menu
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    
+
     // Скрываем Bottom Menu на детальном экране
     val showBottomBar = currentRoute != "apod_detail"
-    
+
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
@@ -62,7 +68,10 @@ fun MainScreen() {
     ) { paddingValues ->
         ApodNavigation(
             navController = navController,
-            viewModel = viewModel,
+            apodListViewModel = apodListViewModel,
+            apodDetailViewModel = apodDetailViewModel,
+            favoritesViewModel = favoritesViewModel,
+            settingsViewModel = settingsViewModel,
             modifier = Modifier.padding(paddingValues)
         )
     }

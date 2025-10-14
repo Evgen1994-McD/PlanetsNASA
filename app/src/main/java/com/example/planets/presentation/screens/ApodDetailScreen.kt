@@ -24,7 +24,7 @@ import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import com.example.planets.R
 import com.example.planets.domain.model.Apod
-import com.example.planets.presentation.viewmodel.ApodViewModel
+import com.example.planets.presentation.viewmodel.ApodDetailViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,7 +32,7 @@ import kotlinx.coroutines.launch
 fun ApodDetailScreen(
     apod: Apod,
     onBackClick: () -> Unit,
-    viewModel: ApodViewModel
+    viewModel: ApodDetailViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
     var isFavorite by remember { mutableStateOf(false) }

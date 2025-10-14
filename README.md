@@ -36,7 +36,7 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                    PRESENTATION LAYER                      │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────┐  │
-│  │   ApodViewModel │  │   UI Screens    │  │ Navigation  │  │
+│  │   ViewModels      │  │   UI Screens    │  │ Navigation  │  │
 │  │   (@HiltViewModel)│  │   (Compose)    │  │   (Compose) │  │
 │  └─────────────────┘  └─────────────────┘  └─────────────┘  │
 └─────────────────────────────────────────────────────────────┘
@@ -83,7 +83,11 @@ app/src/main/java/com/example/planets/
 │   ├── components/      # Переиспользуемые компоненты
 │   ├── screens/         # Экраны приложения
 │   ├── theme/           # Тема приложения
-│   └── viewmodel/       # ViewModel (@HiltViewModel)
+│   └── viewmodel/       # ViewModels для каждого экрана (@HiltViewModel)
+│       ├── ApodListViewModel.kt      # ViewModel для списка APOD
+│       ├── ApodDetailViewModel.kt    # ViewModel для деталей APOD
+│       ├── FavoritesViewModel.kt    # ViewModel для избранного
+│       └── SettingsViewModel.kt     # ViewModel для настроек
 ├── utils/               # Утилиты (NetworkMonitor)
 ├── MainActivity.kt      # Главная активность (@AndroidEntryPoint)
 └── PlanetsApplication.kt # Application класс (@HiltAndroidApp)
@@ -132,6 +136,28 @@ app/src/main/java/com/example/planets/
 ### Экран настроек
 - Очистка кэша
 - Информация о приложении
+
+## 🎯 Преимущества Clean Architecture
+
+### ✅ Разделение ответственности
+- **Каждый экран имеет свою ViewModel** - четкое разделение логики между экранами
+- **Use Cases** - изолированная бизнес-логика
+- **Repository Pattern** - абстракция над источниками данных
+
+### ✅ Тестируемость
+- **Интерфейсы Use Cases** - легко мокать для тестов
+- **Dependency Injection** - простое внедрение зависимостей
+- **Изолированные компоненты** - каждый можно тестировать отдельно
+
+### ✅ Масштабируемость
+- **Модульная структура** - легко добавлять новые функции
+- **Слабая связанность** - изменения в одном слое не влияют на другие
+- **Переиспользование** - Use Cases можно использовать в разных ViewModel
+
+### ✅ Поддержка
+- **Четкая структура** - легко найти нужный код
+- **Документированные интерфейсы** - понятные контракты между слоями
+- **Консистентность** - единый подход во всем проекте
 
 ## Особенности реализации
 
