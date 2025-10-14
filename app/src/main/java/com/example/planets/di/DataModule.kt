@@ -59,7 +59,7 @@ object DataModule {
         return if (BuildConfig.USE_MOCK_DATA) {
             MockApodRepositoryImpl(apodDao, networkMonitor, context, notifyCacheClearedUseCase)
         } else {
-            ApodRepositoryImpl(apiService, apodDao, networkMonitor, context)
+            ApodRepositoryImpl(apiService, apodDao, networkMonitor, context, notifyCacheClearedUseCase)
         }
     }
     
