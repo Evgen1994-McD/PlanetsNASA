@@ -1,4 +1,4 @@
-package com.example.planets.ui.viewmodel
+package com.example.planets.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -51,14 +51,16 @@ class ApodViewModel @Inject constructor(
             error = null,
             hasNetworkError = false,
             hasHttpError = false,
-            httpErrorCode = null
+            httpErrorCode = null,
+            isRetrying = false
         )
     }
     
     fun setNetworkError() {
         _uiState.value = _uiState.value.copy(
             hasNetworkError = true,
-            isLoading = false
+            isLoading = false,
+            isRetrying = false
         )
     }
     
@@ -66,12 +68,17 @@ class ApodViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(
             hasHttpError = true,
             httpErrorCode = errorCode,
-            isLoading = false
+            isLoading = false,
+            isRetrying = false
         )
     }
     
     fun setLoading(loading: Boolean) {
         _uiState.value = _uiState.value.copy(isLoading = loading)
+    }
+    
+    fun setRetrying(retrying: Boolean) {
+        _uiState.value = _uiState.value.copy(isRetrying = retrying)
     }
     
     fun clearOldCache() {
@@ -102,6 +109,7 @@ data class ApodUiState(
     val selectedApod: Apod? = null,
     val error: String? = null,
     val isLoading: Boolean = false,
+    val isRetrying: Boolean = false,
     val hasNetworkError: Boolean = false,
     val hasHttpError: Boolean = false,
     val httpErrorCode: Int? = null

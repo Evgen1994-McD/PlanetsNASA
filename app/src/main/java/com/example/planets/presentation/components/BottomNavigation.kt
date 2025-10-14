@@ -1,4 +1,4 @@
-package com.example.planets.ui.components
+package com.example.planets.presentation.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite

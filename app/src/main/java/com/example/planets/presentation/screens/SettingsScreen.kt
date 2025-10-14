@@ -1,4 +1,4 @@
-package com.example.planets.ui.screens
+package com.example.planets.presentation.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.planets.ui.viewmodel.ApodViewModel
+import com.example.planets.presentation.viewmodel.ApodViewModel
 
 @Composable
 fun SettingsScreen(viewModel: ApodViewModel) {

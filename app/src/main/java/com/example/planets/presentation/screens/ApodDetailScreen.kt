@@ -1,4 +1,4 @@
-package com.example.planets.ui.screens
+package com.example.planets.presentation.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -24,7 +24,7 @@ import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import com.example.planets.R
 import com.example.planets.domain.model.Apod
-import com.example.planets.ui.viewmodel.ApodViewModel
+import com.example.planets.presentation.viewmodel.ApodViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)

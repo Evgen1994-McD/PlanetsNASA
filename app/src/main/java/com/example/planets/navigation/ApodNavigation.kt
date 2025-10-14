@@ -8,11 +8,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.planets.domain.model.Apod
-import com.example.planets.ui.screens.ApodDetailScreen
-import com.example.planets.ui.screens.ApodListScreen
-import com.example.planets.ui.screens.FavoritesScreen
-import com.example.planets.ui.screens.SettingsScreen
-import com.example.planets.ui.viewmodel.ApodViewModel
+import com.example.planets.presentation.screens.ApodDetailScreen
+import com.example.planets.presentation.screens.ApodListScreen
+import com.example.planets.presentation.screens.FavoritesScreen
+import com.example.planets.presentation.screens.SettingsScreen
+import com.example.planets.presentation.viewmodel.ApodViewModel
 
 @Composable
 fun ApodNavigation(

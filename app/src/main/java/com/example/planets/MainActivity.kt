@@ -17,9 +17,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.planets.navigation.ApodNavigation
-import com.example.planets.ui.components.BottomNavigationBar
-import com.example.planets.ui.theme.PlanetsTheme
-import com.example.planets.ui.viewmodel.ApodViewModel
+import com.example.planets.presentation.components.BottomNavigationBar
+import com.example.planets.presentation.theme.PlanetsTheme
+import com.example.planets.presentation.viewmodel.ApodViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

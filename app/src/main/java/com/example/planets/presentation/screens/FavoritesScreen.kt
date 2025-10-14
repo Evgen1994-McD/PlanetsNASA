@@ -1,4 +1,4 @@
-package com.example.planets.ui.screens
+package com.example.planets.presentation.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import com.example.planets.R
 import com.example.planets.domain.model.Apod
-import com.example.planets.ui.viewmodel.ApodViewModel
+import com.example.planets.presentation.viewmodel.ApodViewModel
 import kotlinx.coroutines.launch
 
 @Composable

@@ -1,4 +1,4 @@
-package com.example.planets.ui.screens
+package com.example.planets.presentation.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -29,10 +29,10 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.example.planets.R
 import com.example.planets.domain.model.Apod
-import com.example.planets.ui.components.GeneralErrorScreen
-import com.example.planets.ui.components.HttpErrorScreen
-import com.example.planets.ui.components.NetworkErrorScreen
-import com.example.planets.ui.viewmodel.ApodViewModel
+import com.example.planets.presentation.components.GeneralErrorScreen
+import com.example.planets.presentation.components.HttpErrorScreen
+import com.example.planets.presentation.components.NetworkErrorScreen
+import com.example.planets.presentation.viewmodel.ApodViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,6 +57,7 @@ fun ApodListScreen(
         when (val refreshState = apodPagingItems.loadState.refresh) {
             is LoadState.Error -> {
                 val error = refreshState.error
+                viewModel.setRetrying(false) // Сбрасываем состояние повторной попытки при ошибке
                 when {
                     error.message?.contains("No internet connection and no cached data available") == true -> {
                         viewModel.setNetworkError()
@@ -80,6 +81,7 @@ fun ApodListScreen(
             }
             is LoadState.NotLoading -> {
                 viewModel.setLoading(false)
+                viewModel.setRetrying(false)
                 viewModel.clearError()
             }
         }
@@ -124,14 +126,22 @@ fun ApodListScreen(
                 // Показываем экраны ошибок только если нет данных из кэша
                 uiState.hasNetworkError && apodPagingItems.itemCount == 0 -> {
                     NetworkErrorScreen(
-                        onRetry = { apodPagingItems.retry() }
+                        onRetry = { 
+                            viewModel.setRetrying(true)
+                            apodPagingItems.retry()
+                        },
+                        isRetrying = uiState.isRetrying
                     )
                 }
                 
                 uiState.hasHttpError && apodPagingItems.itemCount == 0 -> {
                     HttpErrorScreen(
                         errorCode = uiState.httpErrorCode ?: 0,
-                        onRetry = { apodPagingItems.retry() }
+                        onRetry = { 
+                            viewModel.setRetrying(true)
+                            apodPagingItems.retry()
+                        },
+                        isRetrying = uiState.isRetrying
                     )
                 }
                 
@@ -149,7 +159,11 @@ fun ApodListScreen(
                     val error = apodPagingItems.loadState.refresh as LoadState.Error
                     GeneralErrorScreen(
                         message = error.error.message ?: "Неизвестная ошибка",
-                        onRetry = { apodPagingItems.retry() }
+                        onRetry = { 
+                            viewModel.setRetrying(true)
+                            apodPagingItems.retry()
+                        },
+                        isRetrying = uiState.isRetrying
                     )
                 }
                 
