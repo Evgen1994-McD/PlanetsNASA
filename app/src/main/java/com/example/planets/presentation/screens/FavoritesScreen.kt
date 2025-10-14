@@ -27,6 +27,14 @@ fun FavoritesScreen(
     onApodClick: (Apod) -> Unit
 ) {
     val favorites by viewModel.favoritesFlow.collectAsState(initial = emptyList())
+    val refreshTrigger by viewModel.refreshTrigger.collectAsState()
+    
+    // Обновляем данные при очистке кэша
+    LaunchedEffect(refreshTrigger) {
+        if (refreshTrigger > 0) {
+            // Данные автоматически обновятся через Flow
+        }
+    }
     
     if (favorites.isEmpty()) {
         Column(

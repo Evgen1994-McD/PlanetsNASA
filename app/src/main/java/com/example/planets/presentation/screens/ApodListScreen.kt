@@ -42,7 +42,8 @@ fun ApodListScreen(
     onApodClick: (Apod) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+    val refreshTrigger by viewModel.refreshTrigger.collectAsState()
+
     val apodPagingItems = viewModel.apodPagingFlow.collectAsLazyPagingItems()
     
     // Сохраняем состояние списка между навигацией
@@ -50,6 +51,13 @@ fun ApodListScreen(
         saver = LazyGridState.Saver
     ) {
         LazyGridState()
+    }
+
+    // Обновляем данные при очистке кэша
+    LaunchedEffect(refreshTrigger) {
+        if (refreshTrigger > 0) {
+            apodPagingItems.refresh()
+        }
     }
     
     // Обработка ошибок загрузки

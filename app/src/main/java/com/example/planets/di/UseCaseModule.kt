@@ -11,6 +11,8 @@ import com.example.planets.domain.usecase.GetFavoritesUseCase
 import com.example.planets.domain.usecase.GetFavoritesUseCaseImpl
 import com.example.planets.domain.usecase.IsFavoriteUseCase
 import com.example.planets.domain.usecase.IsFavoriteUseCaseImpl
+import com.example.planets.domain.usecase.NotifyCacheClearedUseCase
+import com.example.planets.domain.usecase.NotifyCacheClearedUseCaseImpl
 import com.example.planets.domain.usecase.ToggleFavoriteUseCase
 import com.example.planets.domain.usecase.ToggleFavoriteUseCaseImpl
 import dagger.Module
@@ -55,7 +57,16 @@ object UseCaseModule {
     
     @Provides
     @Singleton
-    fun provideClearCacheUseCase(repository: ApodRepository): ClearCacheUseCase {
-        return ClearCacheUseCaseImpl(repository)
+    fun provideClearCacheUseCase(
+        repository: ApodRepository,
+        notifyCacheClearedUseCase: NotifyCacheClearedUseCase
+    ): ClearCacheUseCase {
+        return ClearCacheUseCaseImpl(repository, notifyCacheClearedUseCase)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideNotifyCacheClearedUseCase(): NotifyCacheClearedUseCase {
+        return NotifyCacheClearedUseCaseImpl()
     }
 }
