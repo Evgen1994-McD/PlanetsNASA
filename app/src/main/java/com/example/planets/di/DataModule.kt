@@ -1,11 +1,13 @@
 package com.example.planets.di
 
 import android.content.Context
+import com.example.planets.BuildConfig
 import com.example.planets.data.api.ApiClient
 import com.example.planets.data.api.NasaApiService
 import com.example.planets.data.database.ApodDatabase
 import com.example.planets.data.database.ApodDao
 import com.example.planets.data.repository.ApodRepositoryImpl
+import com.example.planets.data.repository.MockApodRepositoryImpl
 import com.example.planets.data.repository.ThemeRepositoryImpl
 import com.example.planets.domain.repository.ApodRepository
 import com.example.planets.domain.repository.ThemeRepository
@@ -52,7 +54,11 @@ object DataModule {
         networkMonitor: NetworkMonitor,
         @ApplicationContext context: Context
     ): ApodRepository {
-        return ApodRepositoryImpl(apiService, apodDao, networkMonitor, context)
+        return if (BuildConfig.USE_MOCK_DATA) {
+            MockApodRepositoryImpl(apodDao, networkMonitor, context)
+        } else {
+            ApodRepositoryImpl(apiService, apodDao, networkMonitor, context)
+        }
     }
     
     @Provides
