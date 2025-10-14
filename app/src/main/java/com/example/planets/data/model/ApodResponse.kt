@@ -3,9 +3,6 @@ package com.example.planets.data.model
 import com.google.gson.annotations.SerializedName
 
 data class ApodResponse(
-    @SerializedName("id")
-    val id: Int = 0,
-    
     @SerializedName("date")
     val date: String?,
     

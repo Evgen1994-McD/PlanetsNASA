@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    
+    <!-- Планета -->
+    <path
+        android:fillColor="#FF6B6B"
+        android:pathData="M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10s10,-4.48 10,-10S17.52,2 12,2zM12,20c-4.41,0 -8,-3.59 -8,-8s3.59,-8 8,-8s8,3.59 8,8S16.41,20 12,20z"/>
+    
+    <!-- Континенты -->
+    <path
+        android:fillColor="#4ECDC4"
+        android:pathData="M8,8c0,-1.1 0.9,-2 2,-2s2,0.9 2,2s-0.9,2 -2,2S8,9.1 8,8z"/>
+    
+    <path
+        android:fillColor="#4ECDC4"
+        android:pathData="M14,10c0,-1.1 0.9,-2 2,-2s2,0.9 2,2s-0.9,2 -2,2S14,11.1 14,10z"/>
+    
+    <path
+        android:fillColor="#4ECDC4"
+        android:pathData="M6,14c0,-1.1 0.9,-2 2,-2s2,0.9 2,2s-0.9,2 -2,2S6,15.1 6,14z"/>
+    
+    <!-- Кольца планеты -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFD93D"
+        android:strokeWidth="1"
+        android:pathData="M4,8c0,-2 4,-4 8,-4s8,2 8,4"/>
+    
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFD93D"
+        android:strokeWidth="1"
+        android:pathData="M4,16c0,2 4,4 8,4s8,-2 8,-4"/>
+    
+    <!-- Звезды -->
+    <path
+        android:fillColor="#FFD93D"
+        android:pathData="M18,4L19,6L21,6L19.5,7.5L20,9.5L18,8L16,9.5L16.5,7.5L15,6L17,6L18,4z"/>
+    
+    <path
+        android:fillColor="#FFD93D"
+        android:pathData="M6,3L6.5,4L7.5,4L6.75,4.75L7,5.5L6,5L5,5.5L5.25,4.75L4.5,4L5.5,4L6,3z"/>
+    
+    <path
+        android:fillColor="#FFD93D"
+        android:pathData="M20,18L20.5,19L21.5,19L20.75,19.75L21,20.5L20,20L19,20.5L19.25,19.75L18.5,19L19.5,19L20,18z"/>
+</vector>
