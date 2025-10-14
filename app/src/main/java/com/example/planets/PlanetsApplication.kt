@@ -1,11 +1,7 @@
 package com.example.planets
 
 import android.app.Application
-import com.example.planets.data.database.ApodDatabase
+import dagger.hilt.android.HiltAndroidApp
 
-class PlanetsApplication : Application() {
-    
-    val database: ApodDatabase by lazy {
-        ApodDatabase.getDatabase(this)
-    }
-}
+@HiltAndroidApp
+class PlanetsApplication : Application()

@@ -17,14 +17,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import com.example.planets.R
-import com.example.planets.data.model.ApodItem
+import com.example.planets.domain.model.Apod
 import com.example.planets.ui.viewmodel.ApodViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun FavoritesScreen(
     viewModel: ApodViewModel,
-    onApodClick: (ApodItem) -> Unit
+    onApodClick: (Apod) -> Unit
 ) {
     val favorites by viewModel.favoritesFlow.collectAsState(initial = emptyList())
     
@@ -80,7 +80,7 @@ fun FavoritesScreen(
 
 @Composable
 fun FavoriteCard(
-    apod: ApodItem,
+    apod: Apod,
     viewModel: ApodViewModel,
     onClick: () -> Unit
 ) {
