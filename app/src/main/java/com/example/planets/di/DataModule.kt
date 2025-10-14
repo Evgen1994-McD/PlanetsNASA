@@ -6,7 +6,9 @@ import com.example.planets.data.api.NasaApiService
 import com.example.planets.data.database.ApodDatabase
 import com.example.planets.data.database.ApodDao
 import com.example.planets.data.repository.ApodRepositoryImpl
+import com.example.planets.data.repository.ThemeRepositoryImpl
 import com.example.planets.domain.repository.ApodRepository
+import com.example.planets.domain.repository.ThemeRepository
 import com.example.planets.utils.NetworkMonitor
 import dagger.Module
 import dagger.Provides
@@ -51,5 +53,11 @@ object DataModule {
         @ApplicationContext context: Context
     ): ApodRepository {
         return ApodRepositoryImpl(apiService, apodDao, networkMonitor, context)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideThemeRepository(@ApplicationContext context: Context): ThemeRepository {
+        return ThemeRepositoryImpl(context)
     }
 }

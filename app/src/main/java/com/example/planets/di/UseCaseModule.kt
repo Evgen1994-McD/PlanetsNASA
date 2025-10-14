@@ -1,6 +1,7 @@
 package com.example.planets.di
 
 import com.example.planets.domain.repository.ApodRepository
+import com.example.planets.domain.repository.ThemeRepository
 import com.example.planets.domain.usecase.ClearCacheUseCase
 import com.example.planets.domain.usecase.ClearCacheUseCaseImpl
 import com.example.planets.domain.usecase.GetApodDetailUseCase
@@ -13,6 +14,8 @@ import com.example.planets.domain.usecase.IsFavoriteUseCase
 import com.example.planets.domain.usecase.IsFavoriteUseCaseImpl
 import com.example.planets.domain.usecase.NotifyCacheClearedUseCase
 import com.example.planets.domain.usecase.NotifyCacheClearedUseCaseImpl
+import com.example.planets.domain.usecase.ThemeUseCase
+import com.example.planets.domain.usecase.ThemeUseCaseImpl
 import com.example.planets.domain.usecase.ToggleFavoriteUseCase
 import com.example.planets.domain.usecase.ToggleFavoriteUseCaseImpl
 import dagger.Module
@@ -68,5 +71,11 @@ object UseCaseModule {
     @Singleton
     fun provideNotifyCacheClearedUseCase(): NotifyCacheClearedUseCase {
         return NotifyCacheClearedUseCaseImpl()
+    }
+    
+    @Provides
+    @Singleton
+    fun provideThemeUseCase(themeRepository: ThemeRepository): ThemeUseCase {
+        return ThemeUseCaseImpl(themeRepository)
     }
 }
