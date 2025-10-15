@@ -147,6 +147,7 @@ app/src/main/java/com/example/planets/
 - **Все функции** работают в обоих режимах (избранное, кэш, настройки)
 
 Подробное руководство: [MOCK_DATA_GUIDE.md](MOCK_DATA_GUIDE.md)
+- **API Key**: `cVsJ9alkirbS7Jmj5bA3zFHdopkvdEqnKG45p34o` (для демонстрации)
 
 ## Установка и запуск
 
