@@ -1,4 +1,4 @@
-package com.example.planets.ui.theme
+package com.example.planets.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 

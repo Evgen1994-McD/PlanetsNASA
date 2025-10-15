@@ -4,20 +4,28 @@ import androidx.paging.PagingData
 import com.example.planets.domain.model.Apod
 import com.example.planets.domain.repository.ApodRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
 /**
- * Use Case для получения списка APOD с пагинацией
- * Инкапсулирует бизнес-логику получения данных
+ * Интерфейс для получения списка APOD с пагинацией
  */
-class GetApodListUseCase @Inject constructor(
+interface GetApodListUseCase {
+    operator fun invoke(): Flow<PagingData<Apod>>
+    fun getRefreshableFlow(refreshTrigger: Flow<Unit>): Flow<PagingData<Apod>>
+}
+
+class GetApodListUseCaseImpl @Inject constructor(
     private val repository: ApodRepository
-) {
-    /**
-     * Выполняет получение списка APOD
-     * @return Flow с пагинированными данными APOD
-     */
-    operator fun invoke(): Flow<PagingData<Apod>> {
+) : GetApodListUseCase {
+    
+    override operator fun invoke(): Flow<PagingData<Apod>> {
         return repository.getApodPagingFlow()
+    }
+    
+    override fun getRefreshableFlow(refreshTrigger: Flow<Unit>): Flow<PagingData<Apod>> {
+        return refreshTrigger.flatMapLatest {
+            repository.getApodPagingFlow()
+        }
     }
 }

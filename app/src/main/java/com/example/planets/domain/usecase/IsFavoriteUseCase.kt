@@ -4,18 +4,18 @@ import com.example.planets.domain.repository.ApodRepository
 import javax.inject.Inject
 
 /**
- * Use Case для проверки статуса избранного APOD
- * Инкапсулирует бизнес-логику проверки избранного статуса
+ * Интерфейс для проверки статуса избранного APOD
  */
-class IsFavoriteUseCase @Inject constructor(
+interface IsFavoriteUseCase {
+    suspend operator fun invoke(date: String): Boolean
+}
+
+
+class IsFavoriteUseCaseImpl @Inject constructor(
     private val repository: ApodRepository
-) {
-    /**
-     * Выполняет проверку, находится ли APOD в избранном
-     * @param date дата APOD
-     * @return true если в избранном, false иначе
-     */
-    suspend operator fun invoke(date: String): Boolean {
+) : IsFavoriteUseCase {
+    
+    override suspend operator fun invoke(date: String): Boolean {
         return repository.isFavorite(date)
     }
 }

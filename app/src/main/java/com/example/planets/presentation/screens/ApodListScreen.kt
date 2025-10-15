@@ -1,4 +1,4 @@
-package com.example.planets.ui.screens
+package com.example.planets.presentation.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,7 +17,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -29,20 +28,21 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.example.planets.R
 import com.example.planets.domain.model.Apod
-import com.example.planets.ui.components.GeneralErrorScreen
-import com.example.planets.ui.components.HttpErrorScreen
-import com.example.planets.ui.components.NetworkErrorScreen
-import com.example.planets.ui.viewmodel.ApodViewModel
+import com.example.planets.presentation.components.GeneralErrorScreen
+import com.example.planets.presentation.components.HttpErrorScreen
+import com.example.planets.presentation.components.NetworkErrorScreen
+import com.example.planets.presentation.viewmodel.ApodListViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ApodListScreen(
-    viewModel: ApodViewModel,
+    viewModel: ApodListViewModel,
     onApodClick: (Apod) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+    val refreshTrigger by viewModel.refreshTrigger.collectAsState()
+
     val apodPagingItems = viewModel.apodPagingFlow.collectAsLazyPagingItems()
     
     // Сохраняем состояние списка между навигацией
@@ -51,12 +51,20 @@ fun ApodListScreen(
     ) {
         LazyGridState()
     }
+
+    // Обновляем данные при очистке кэша
+    LaunchedEffect(refreshTrigger) {
+        if (refreshTrigger > 0) {
+            apodPagingItems.refresh()
+        }
+    }
     
     // Обработка ошибок загрузки
     LaunchedEffect(apodPagingItems.loadState.refresh) {
         when (val refreshState = apodPagingItems.loadState.refresh) {
             is LoadState.Error -> {
                 val error = refreshState.error
+                viewModel.setRetrying(false) // Сбрасываем состояние повторной попытки при ошибке
                 when {
                     error.message?.contains("No internet connection and no cached data available") == true -> {
                         viewModel.setNetworkError()
@@ -80,6 +88,7 @@ fun ApodListScreen(
             }
             is LoadState.NotLoading -> {
                 viewModel.setLoading(false)
+                viewModel.setRetrying(false)
                 viewModel.clearError()
             }
         }
@@ -124,14 +133,22 @@ fun ApodListScreen(
                 // Показываем экраны ошибок только если нет данных из кэша
                 uiState.hasNetworkError && apodPagingItems.itemCount == 0 -> {
                     NetworkErrorScreen(
-                        onRetry = { apodPagingItems.retry() }
+                        onRetry = { 
+                            viewModel.setRetrying(true)
+                            apodPagingItems.retry()
+                        },
+                        isRetrying = uiState.isRetrying
                     )
                 }
                 
                 uiState.hasHttpError && apodPagingItems.itemCount == 0 -> {
                     HttpErrorScreen(
                         errorCode = uiState.httpErrorCode ?: 0,
-                        onRetry = { apodPagingItems.retry() }
+                        onRetry = { 
+                            viewModel.setRetrying(true)
+                            apodPagingItems.retry()
+                        },
+                        isRetrying = uiState.isRetrying
                     )
                 }
                 
@@ -149,7 +166,11 @@ fun ApodListScreen(
                     val error = apodPagingItems.loadState.refresh as LoadState.Error
                     GeneralErrorScreen(
                         message = error.error.message ?: "Неизвестная ошибка",
-                        onRetry = { apodPagingItems.retry() }
+                        onRetry = { 
+                            viewModel.setRetrying(true)
+                            apodPagingItems.retry()
+                        },
+                        isRetrying = uiState.isRetrying
                     )
                 }
                 
@@ -267,7 +288,7 @@ fun ApodListScreen(
 fun ApodCard(
     apod: Apod,
     onClick: () -> Unit,
-    viewModel: ApodViewModel
+    viewModel: ApodListViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
     var isFavorite by remember { mutableStateOf(false) }
@@ -352,11 +373,11 @@ fun ApodCard(
                     .align(Alignment.TopEnd)
                     .padding(8.dp)
             ) {
-                Icon(
-                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = if (isFavorite) "Удалить из избранного" else "Добавить в избранное",
-                    tint = if (isFavorite) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = if (isFavorite) "Удалить из избранного" else "Добавить в избранное",
+                            tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
             }
         }
     }

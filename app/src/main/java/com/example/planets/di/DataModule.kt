@@ -1,12 +1,17 @@
 package com.example.planets.di
 
 import android.content.Context
+import com.example.planets.BuildConfig
 import com.example.planets.data.api.ApiClient
 import com.example.planets.data.api.NasaApiService
 import com.example.planets.data.database.ApodDatabase
 import com.example.planets.data.database.ApodDao
 import com.example.planets.data.repository.ApodRepositoryImpl
+import com.example.planets.data.repository.MockApodRepositoryImpl
+import com.example.planets.data.repository.ThemeRepositoryImpl
 import com.example.planets.domain.repository.ApodRepository
+import com.example.planets.domain.repository.ThemeRepository
+import com.example.planets.domain.usecase.NotifyCacheClearedUseCase
 import com.example.planets.utils.NetworkMonitor
 import dagger.Module
 import dagger.Provides
@@ -48,8 +53,19 @@ object DataModule {
         apiService: NasaApiService,
         apodDao: ApodDao,
         networkMonitor: NetworkMonitor,
+        notifyCacheClearedUseCase: NotifyCacheClearedUseCase,
         @ApplicationContext context: Context
     ): ApodRepository {
-        return ApodRepositoryImpl(apiService, apodDao, networkMonitor, context)
+        return if (BuildConfig.USE_MOCK_DATA) {
+            MockApodRepositoryImpl(apodDao, networkMonitor, context, notifyCacheClearedUseCase)
+        } else {
+            ApodRepositoryImpl(apiService, apodDao, networkMonitor, context, notifyCacheClearedUseCase)
+        }
+    }
+    
+    @Provides
+    @Singleton
+    fun provideThemeRepository(@ApplicationContext context: Context): ThemeRepository {
+        return ThemeRepositoryImpl(context)
     }
 }

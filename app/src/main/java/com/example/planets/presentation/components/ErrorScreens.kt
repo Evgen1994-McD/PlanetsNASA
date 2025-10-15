@@ -1,9 +1,8 @@
-package com.example.planets.ui.components
+package com.example.planets.presentation.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -15,6 +14,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun NetworkErrorScreen(
     onRetry: () -> Unit,
+    isRetrying: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     ErrorScreen(
@@ -22,6 +22,7 @@ fun NetworkErrorScreen(
         title = "Нет подключения к интернету",
         message = "Проверьте подключение к сети и попробуйте снова",
         onRetry = onRetry,
+        isRetrying = isRetrying,
         modifier = modifier
     )
 }
@@ -30,6 +31,7 @@ fun NetworkErrorScreen(
 fun HttpErrorScreen(
     errorCode: Int,
     onRetry: () -> Unit,
+    isRetrying: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val (title, message) = when (errorCode) {
@@ -44,6 +46,7 @@ fun HttpErrorScreen(
         title = title,
         message = message,
         onRetry = onRetry,
+        isRetrying = isRetrying,
         modifier = modifier
     )
 }
@@ -52,6 +55,7 @@ fun HttpErrorScreen(
 fun GeneralErrorScreen(
     message: String,
     onRetry: () -> Unit,
+    isRetrying: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     ErrorScreen(
@@ -59,6 +63,7 @@ fun GeneralErrorScreen(
         title = "Произошла ошибка",
         message = message,
         onRetry = onRetry,
+        isRetrying = isRetrying,
         modifier = modifier
     )
 }
@@ -69,6 +74,7 @@ private fun ErrorScreen(
     title: String,
     message: String,
     onRetry: () -> Unit,
+    isRetrying: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -106,15 +112,25 @@ private fun ErrorScreen(
         
         Button(
             onClick = onRetry,
+            enabled = !isRetrying,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(
-                imageVector = Icons.Default.Refresh,
-                contentDescription = "Retry",
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Попробовать снова")
+            if (isRetrying) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    strokeWidth = 2.dp
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Загрузка...")
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = "Retry",
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Попробовать снова")
+            }
         }
     }
 }

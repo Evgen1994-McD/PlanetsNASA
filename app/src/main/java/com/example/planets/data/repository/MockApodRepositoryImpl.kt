@@ -1,6 +1,7 @@
 package com.example.planets.data.repository
 
 import android.content.Context
+import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -9,39 +10,37 @@ import com.example.planets.data.database.ApodDao
 import com.example.planets.data.mapper.ApodMapper.toDomain
 import com.example.planets.data.mapper.ApodMapper.toEntity
 import com.example.planets.data.mapper.ApodMapper.toFavoriteEntity
-import com.example.planets.data.paging.ApodPagingSource
+import com.example.planets.data.mock.MockApodData
+import com.example.planets.data.paging.MockApodPagingSource
 import com.example.planets.domain.model.Apod
 import com.example.planets.domain.repository.ApodRepository
 import com.example.planets.domain.usecase.NotifyCacheClearedUseCase
 import com.example.planets.utils.NetworkMonitor
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Реализация репозитория для работы с APOD данными
- * Реализует интерфейс ApodRepository из Domain Layer
- */
+
 @Singleton
-class ApodRepositoryImpl @Inject constructor(
-    private val apiService: NasaApiService,
+class MockApodRepositoryImpl @Inject constructor(
     private val apodDao: ApodDao,
     private val networkMonitor: NetworkMonitor,
     private val context: Context,
     private val notifyCacheClearedUseCase: NotifyCacheClearedUseCase
 ) : ApodRepository {
-    
-    // API ключ для тестирования
-    private val apiKey = "cVsJ9alkirbS7Jmj5bA3zFHdopkvdEqnKG45p34o"
-    
-    // Кэш для хранения загруженных данных между экземплярами PagingSource
+
+    companion object {
+        private const val TAG = "MockApodRepositoryImpl"
+    }
+
     private val cachedData = mutableListOf<Apod>()
     private var lastLoadTime = 0L
     private val cacheTimeout = 5 * 60 * 1000L // 5 минут
-    
+
     override fun getApodPagingFlow(): Flow<PagingData<Apod>> {
         return Pager(
             config = PagingConfig(
@@ -51,57 +50,37 @@ class ApodRepositoryImpl @Inject constructor(
                 initialLoadSize = 4
             ),
             pagingSourceFactory = { 
-                ApodPagingSource(apiService, apodDao, networkMonitor, this)
+                MockApodPagingSource(apodDao, networkMonitor)
             }
         ).flow
     }
-    
+
     override suspend fun getApodByDate(date: String): Result<Apod> = withContext(Dispatchers.IO) {
         try {
-            val response = apiService.getApod(apiKey, date)
-            if (response.isSuccessful) {
-                val apodResponse = response.body()
-                if (apodResponse != null) {
-                    val apod = apodResponse.toDomain()
-                    Result.success(apod)
-                } else {
-                    Result.failure(Exception("Данные не найдены"))
-                }
+            delay(500) // Имитируем задержку сети
+            
+            val apod = MockApodData.mockApods.find { it.date == date }
+            if (apod != null) {
+                Result.success(apod)
             } else {
-                Result.failure(Exception("Ошибка API: ${response.code()}"))
+                Result.failure(Exception("APOD с датой $date не найден"))
             }
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
-    
+
     override suspend fun getApodList(count: Int): Result<List<Apod>> = withContext(Dispatchers.IO) {
         try {
-            val response = apiService.getApodList(apiKey, count)
-            if (response.isSuccessful) {
-                val apodList = response.body()?.map { it.toDomain() } ?: emptyList()
-                Result.success(apodList)
-            } else {
-                Result.failure(Exception("Ошибка API: ${response.code()}"))
-            }
+            delay(800) // Имитируем задержку сети
+            
+            val apods = MockApodData.mockApods.take(count)
+            Result.success(apods)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
-    
-    override suspend fun toggleFavorite(apod: Apod) = withContext(Dispatchers.IO) {
-        val isFavorite = apodDao.isFavorite(apod.date)
-        if (isFavorite) {
-            apodDao.deleteFavoriteByDate(apod.date)
-        } else {
-            apodDao.insertFavorite(apod.toFavoriteEntity())
-        }
-    }
-    
-    override suspend fun isFavorite(date: String): Boolean = withContext(Dispatchers.IO) {
-        apodDao.isFavorite(date)
-    }
-    
+
     override suspend fun addToFavorites(apod: Apod): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             apodDao.insertFavorite(apod.toFavoriteEntity())
@@ -110,7 +89,7 @@ class ApodRepositoryImpl @Inject constructor(
             Result.failure(e)
         }
     }
-    
+
     override suspend fun removeFromFavorites(date: String): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             apodDao.deleteFavoriteByDate(date)
@@ -119,44 +98,60 @@ class ApodRepositoryImpl @Inject constructor(
             Result.failure(e)
         }
     }
-    
+
+    override suspend fun toggleFavorite(apod: Apod) {
+        val isFavorite = apodDao.isFavorite(apod.date)
+        if (isFavorite) {
+            removeFromFavorites(apod.date).getOrThrow()
+        } else {
+            addToFavorites(apod).getOrThrow()
+        }
+    }
+
+    override suspend fun isFavorite(date: String): Boolean {
+        return apodDao.isFavorite(date)
+    }
+
     override fun getFavoritesFlow(): Flow<List<Apod>> {
         return apodDao.getAllFavorites().map { favorites ->
             favorites.map { it.toDomain() }
         }
     }
-    
+
     override suspend fun cacheApod(apod: Apod) = withContext(Dispatchers.IO) {
         apodDao.insertApod(apod.toEntity())
     }
-    
+
     override suspend fun getCachedApods(): List<Apod> = withContext(Dispatchers.IO) {
-        apodDao.getRecentCachedApods(50).map { it.toDomain() }
+        apodDao.getRecentCachedApods(20).map { it.toDomain() }
     }
-    
+
     override suspend fun clearOldCache(): Result<Unit> = withContext(Dispatchers.IO) {
         try {
+            Log.d(TAG, "Clearing old cache...")
             val oneWeekAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000)
             apodDao.deleteOldApods(oneWeekAgo)
             notifyCacheClearedUseCase.notifyCacheCleared()
+            Log.d(TAG, "Old cache cleared successfully")
             Result.success(Unit)
         } catch (e: Exception) {
+            Log.e(TAG, "Error clearing old cache", e)
             Result.failure(e)
         }
     }
-    
+
     override suspend fun clearAllCache(): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            // Очищаем память
+            Log.d(TAG, "Clearing all cache...")
             cachedData.clear()
             lastLoadTime = 0L
-            
-            // Очищаем базу данных - удаляем все APOD и избранные
             apodDao.deleteAllApods()
             apodDao.deleteAllFavorites()
             notifyCacheClearedUseCase.notifyCacheCleared()
+            Log.d(TAG, "All cache cleared successfully")
             Result.success(Unit)
         } catch (e: Exception) {
+            Log.e(TAG, "Error clearing all cache", e)
             Result.failure(e)
         }
     }

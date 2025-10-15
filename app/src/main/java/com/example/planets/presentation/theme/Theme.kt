@@ -1,4 +1,4 @@
-package com.example.planets.ui.theme
+package com.example.planets.presentation.theme
 
 import android.app.Activity
 import android.os.Build
@@ -9,7 +9,12 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
+import com.example.planets.domain.model.ThemeMode
+import com.example.planets.domain.usecase.ThemeUseCase
+import dagger.hilt.android.EntryPointAccessors
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -40,13 +45,26 @@ fun PlanetsTheme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+    val context = LocalContext.current
+    val themeUseCase = EntryPointAccessors.fromApplication(
+        context.applicationContext,
+        ThemeEntryPoint::class.java
+    ).themeUseCase()
+    
+    val themeMode by themeUseCase.getThemeMode().collectAsState(initial = ThemeMode.SYSTEM)
+    
+    val shouldUseDarkTheme = when (themeMode) {
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+        ThemeMode.SYSTEM -> darkTheme
+    }
+    
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            if (shouldUseDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
-        darkTheme -> DarkColorScheme
+        shouldUseDarkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
 
@@ -55,4 +73,10 @@ fun PlanetsTheme(
         typography = Typography,
         content = content
     )
+}
+
+@dagger.hilt.EntryPoint
+@dagger.hilt.InstallIn(dagger.hilt.components.SingletonComponent::class)
+interface ThemeEntryPoint {
+    fun themeUseCase(): ThemeUseCase
 }

@@ -4,23 +4,35 @@ import com.example.planets.domain.repository.ApodRepository
 import javax.inject.Inject
 
 /**
- * Use Case для очистки кэша
- * Инкапсулирует бизнес-логику управления кэшем
+ * Интерфейс для очистки кэша APOD
  */
-class ClearCacheUseCase @Inject constructor(
-    private val repository: ApodRepository
-) {
-    /**
-     * Выполняет очистку всего кэша
-     */
-    suspend operator fun invoke() {
-        repository.clearAllCache()
+interface ClearCacheUseCase {
+    suspend operator fun invoke(): Result<Unit>
+    suspend fun clearOldCache(): Result<Unit>
+}
+
+
+class ClearCacheUseCaseImpl @Inject constructor(
+    private val repository: ApodRepository,
+    private val notifyCacheClearedUseCase: NotifyCacheClearedUseCase,
+    private val invalidatePagingSourceUseCase: InvalidatePagingSourceUseCase
+) : ClearCacheUseCase {
+    
+    override suspend operator fun invoke(): Result<Unit> {
+        val result = repository.clearAllCache()
+        if (result.isSuccess) {
+            notifyCacheClearedUseCase.notifyCacheCleared()
+            invalidatePagingSourceUseCase.invalidatePagingSource()
+        }
+        return result
     }
     
-    /**
-     * Выполняет очистку старого кэша
-     */
-    suspend fun clearOldCache() {
-        repository.clearOldCache()
+    override suspend fun clearOldCache(): Result<Unit> {
+        val result = repository.clearOldCache()
+        if (result.isSuccess) {
+            notifyCacheClearedUseCase.notifyCacheCleared()
+            invalidatePagingSourceUseCase.invalidatePagingSource()
+        }
+        return result
     }
 }

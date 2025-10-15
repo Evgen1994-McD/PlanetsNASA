@@ -1,4 +1,4 @@
-package com.example.planets.ui.theme
+package com.example.planets.presentation.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

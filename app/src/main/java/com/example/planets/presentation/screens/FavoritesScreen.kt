@@ -1,4 +1,4 @@
-package com.example.planets.ui.screens
+package com.example.planets.presentation.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,7 +10,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -18,15 +17,23 @@ import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import com.example.planets.R
 import com.example.planets.domain.model.Apod
-import com.example.planets.ui.viewmodel.ApodViewModel
+import com.example.planets.presentation.viewmodel.FavoritesViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun FavoritesScreen(
-    viewModel: ApodViewModel,
+    viewModel: FavoritesViewModel,
     onApodClick: (Apod) -> Unit
 ) {
     val favorites by viewModel.favoritesFlow.collectAsState(initial = emptyList())
+    val refreshTrigger by viewModel.refreshTrigger.collectAsState()
+    
+    // Обновляем данные при очистке кэша
+    LaunchedEffect(refreshTrigger) {
+        if (refreshTrigger > 0) {
+            // Данные автоматически обновятся через Flow
+        }
+    }
     
     if (favorites.isEmpty()) {
         Column(
@@ -81,7 +88,7 @@ fun FavoritesScreen(
 @Composable
 fun FavoriteCard(
     apod: Apod,
-    viewModel: ApodViewModel,
+    viewModel: FavoritesViewModel,
     onClick: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -167,7 +174,7 @@ fun FavoriteCard(
                 Icon(
                     imageVector = Icons.Default.Favorite,
                     contentDescription = "Удалить из избранного",
-                    tint = Color.Red
+                    tint = MaterialTheme.colorScheme.error
                 )
             }
         }
