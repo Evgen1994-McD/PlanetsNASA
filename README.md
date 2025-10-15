@@ -41,7 +41,7 @@ app/src/main/java/com/example/planets/
 Приложение использует NASA APOD API:
 - **Базовый URL**: `https://api.nasa.gov/`
 - **Endpoint**: `planetary/apod`
-- **API Key**: `DEMO_KEY` (для демонстрации)
+- **API Key**: `cVsJ9alkirbS7Jmj5bA3zFHdopkvdEqnKG45p34o` (для демонстрации)
 
 ## Установка и запуск
 
