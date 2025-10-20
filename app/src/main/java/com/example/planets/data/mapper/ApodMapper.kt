@@ -7,9 +7,13 @@ import com.example.planets.domain.model.Apod
 
 /**
  * Маппер для преобразования между Domain и Data моделями
+ *
+ * Сделаю Extension функции для каждого класса
  */
 object ApodMapper {
-    
+
+
+
     /**
      * Преобразует ApodResponse (API) в Domain модель Apod
      */
