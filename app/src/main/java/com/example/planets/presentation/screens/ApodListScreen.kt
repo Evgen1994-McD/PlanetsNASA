@@ -40,6 +40,9 @@ fun ApodListScreen(
     viewModel: ApodListViewModel,
     onApodClick: (Apod) -> Unit
 ) {
+    /**
+     * Стейт передаю с вью модели ( uiState )
+     */
     val uiState by viewModel.uiState.collectAsState()
     val refreshTrigger by viewModel.refreshTrigger.collectAsState()
 
@@ -95,6 +98,9 @@ fun ApodListScreen(
     }
     
     Scaffold(
+        /**
+         * Топ Апп Бар (Тулбаррр)
+         */
         topBar = {
             TopAppBar(
                 title = { 
@@ -113,6 +119,10 @@ fun ApodListScreen(
                         }
                     }
                 },
+
+                /**
+                 * Иконка рефреш в тубаре
+                 */
                 actions = {
                     IconButton(onClick = { apodPagingItems.refresh() }) {
                         Icon(
@@ -129,7 +139,13 @@ fun ApodListScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            /**
+             * Обрабатываем uiState
+             */
             when {
+                /**
+                 * Перебираю виды ошибок
+                 */
                 // Показываем экраны ошибок только если нет данных из кэша
                 uiState.hasNetworkError && apodPagingItems.itemCount == 0 -> {
                     NetworkErrorScreen(
@@ -153,7 +169,9 @@ fun ApodListScreen(
                 }
                 
                 apodPagingItems.loadState.refresh is LoadState.Loading && apodPagingItems.itemCount == 0 -> {
-                    // Показываем прогресс только при первой загрузке
+                    /**
+                     * Показываем прогресс только при первой загрузке - когда стейт загрузки и количество итемов.
+                      */
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -173,8 +191,12 @@ fun ApodListScreen(
                         isRetrying = uiState.isRetrying
                     )
                 }
-                
+
+                /**
+                 * Если всё успешно то показываю АПОДС (  использую 2 вертикал Грид с 2 колонками
+                 */
                 else -> {
+
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
                         state = listState,
@@ -195,7 +217,7 @@ fun ApodListScreen(
                                     viewModel = viewModel
                                 )
                             } else {
-                                // Placeholder while loading
+
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -235,6 +257,9 @@ fun ApodListScreen(
                                         .padding(16.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
+                                    /**
+                                     *Показываю ошибку загрузки когда пропал интернет и в наличии только данные кеша
+                                     */
                                     Text(
                                         text = "Ошибка загрузки",
                                         style = MaterialTheme.typography.bodyMedium,
@@ -249,6 +274,10 @@ fun ApodListScreen(
                             (apodPagingItems.loadState.refresh is LoadState.Error || 
                              apodPagingItems.loadState.append is LoadState.Error)) {
                             item(span = { GridItemSpan(2) }) {
+
+                                /**
+                                 * Сделаю кард, в этой кард будет row с иконкой и текстом
+                                 */
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -283,6 +312,10 @@ fun ApodListScreen(
         }
     }
 }
+
+/**
+ * Верстка Карточки с APOD
+ */
 
 @Composable
 fun ApodCard(

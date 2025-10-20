@@ -35,6 +35,9 @@ fun ApodNavigation(
                     ApodListScreen(
                         viewModel = apodListViewModel,
                         onApodClick = { apod ->
+                            /**
+                             * Передаю АПОД на фрагменнт с деталями ( выбираю во вью модел выбранный АПОД )
+                             */
                             apodDetailViewModel.selectApod(apod)
                             navController.navigate("apod_detail") {
                                 // Не сохраняем детальный экран в стеке
@@ -52,6 +55,9 @@ fun ApodNavigation(
                         ApodDetailScreen(
                             apod = selectedApod,
                             onBackClick = {
+                                /**
+                                 * Устанавливаю
+                                 */
                                 apodDetailViewModel.clearSelectedApod()
                                 navController.popBackStack()
                             },
@@ -71,6 +77,9 @@ fun ApodNavigation(
         
                 // Favorites screen
                 composable("favorites") {
+                    /**
+                     * Тоже самое, перехожу на выбранный АПОД из фаворит
+                     */
                     FavoritesScreen(
                         viewModel = favoritesViewModel,
                         onApodClick = { apod ->
@@ -83,7 +92,7 @@ fun ApodNavigation(
                     )
                 }
 
-                // Settings screen
+                // Переход на экран сеттингс
                 composable("settings") {
                     SettingsScreen(viewModel = settingsViewModel)
                 }

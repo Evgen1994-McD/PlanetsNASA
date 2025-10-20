@@ -21,7 +21,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
         // Флаг для переключения между реальным API и мок-данными
-        buildConfigField("boolean", "USE_MOCK_DATA", "false")
+        buildConfigField("boolean", "USE_MOCK_DATA", "true")
     }
 
     buildTypes {

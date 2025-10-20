@@ -39,7 +39,7 @@ class MockApodRepositoryImpl @Inject constructor(
 
     private val cachedData = mutableListOf<Apod>()
     private var lastLoadTime = 0L
-    private val cacheTimeout = 5 * 60 * 1000L // 5 минут
+
 
     override fun getApodPagingFlow(): Flow<PagingData<Apod>> {
         return Pager(
@@ -156,14 +156,5 @@ class MockApodRepositoryImpl @Inject constructor(
         }
     }
     
-    // Методы для работы с кэшем (используются PagingSource)
-    fun updateCache(data: List<Apod>, isFirstPage: Boolean = false) {
-        if (isFirstPage) {
-            cachedData.clear()
-            cachedData.addAll(data)
-        } else {
-            cachedData.addAll(data)
-        }
-        lastLoadTime = System.currentTimeMillis()
-    }
+
 }

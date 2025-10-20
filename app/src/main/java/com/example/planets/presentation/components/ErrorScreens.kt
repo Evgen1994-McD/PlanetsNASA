@@ -34,6 +34,9 @@ fun HttpErrorScreen(
     isRetrying: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    /**
+     * Деструктирующее присваивание переменных
+     */
     val (title, message) = when (errorCode) {
         404 -> "Страница не найдена" to "Запрашиваемые данные не найдены на сервере"
         500 -> "Ошибка сервера" to "Внутренняя ошибка сервера. Попробуйте позже"
