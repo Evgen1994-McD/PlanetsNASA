@@ -12,19 +12,4 @@ data class Apod(
     val hdUrl: String?,
     val mediaType: String,
     val serviceVersion: String
-) {
-    /**
-     * Проверяет, является ли APOD изображением
-     */
-    fun isImage(): Boolean = mediaType.lowercase() == "image"
-    
-    /**
-     * Проверяет, является ли APOD видео
-     */
-    fun isVideo(): Boolean = mediaType.lowercase() == "video"
-    
-    /**
-     * Возвращает URL для отображения (HD если доступен, иначе обычный)
-     */
-    fun getDisplayUrl(): String = hdUrl ?: url
-}
+)
