@@ -44,8 +44,9 @@ fun ApodListScreen(
      * Стейт передаю с вью модели ( uiState )
      */
     val uiState by viewModel.uiState.collectAsState()
+    // Собираю Триггер, чтобы если что обновить экран
     val refreshTrigger by viewModel.refreshTrigger.collectAsState()
-
+        //собираю ленивый поток Apods
     val apodPagingItems = viewModel.apodPagingFlow.collectAsLazyPagingItems()
     
     // Сохраняем состояние списка между навигацией
