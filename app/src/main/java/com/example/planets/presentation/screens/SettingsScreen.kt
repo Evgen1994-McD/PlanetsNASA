@@ -21,7 +21,8 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     val themeMode by viewModel.themeMode.collectAsState()
     var showClearCacheDialog by remember { mutableStateOf(false) }
-    
+
+    // Верхняя иконка настроек
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -189,6 +190,8 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
     }
 }
 
+
+//Функция одной из кнопок темы ( Светлая / Темная / Системная )
 @Composable
 private fun ThemeOption(
     icon: androidx.compose.ui.graphics.vector.ImageVector,

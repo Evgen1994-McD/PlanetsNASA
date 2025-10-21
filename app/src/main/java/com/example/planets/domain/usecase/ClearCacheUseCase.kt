@@ -8,7 +8,6 @@ import javax.inject.Inject
  */
 interface ClearCacheUseCase {
     suspend operator fun invoke(): Result<Unit>
-    suspend fun clearOldCache(): Result<Unit>
 }
 
 
@@ -27,12 +26,5 @@ class ClearCacheUseCaseImpl @Inject constructor(
         return result
     }
     
-    override suspend fun clearOldCache(): Result<Unit> {
-        val result = repository.clearOldCache()
-        if (result.isSuccess) {
-            notifyCacheClearedUseCase.notifyCacheCleared()
-            invalidatePagingSourceUseCase.invalidatePagingSource()
-        }
-        return result
-    }
+
 }

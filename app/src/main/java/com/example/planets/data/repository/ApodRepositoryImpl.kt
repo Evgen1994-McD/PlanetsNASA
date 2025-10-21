@@ -77,19 +77,7 @@ class ApodRepositoryImpl @Inject constructor(
         }
     }
     
-    override suspend fun getApodList(count: Int): Result<List<Apod>> = withContext(Dispatchers.IO) {
-        try {
-            val response = apiService.getApodList(apiKey, count)
-            if (response.isSuccessful) {
-                val apodList = response.body()?.map { it.toDomain() } ?: emptyList()
-                Result.success(apodList)
-            } else {
-                Result.failure(Exception("Ошибка API: ${response.code()}"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
+
     
     override suspend fun toggleFavorite(apod: Apod) = withContext(Dispatchers.IO) {
         val isFavorite = apodDao.isFavorite(apod.date)
@@ -128,24 +116,12 @@ class ApodRepositoryImpl @Inject constructor(
         }
     }
     
-    override suspend fun cacheApod(apod: Apod) = withContext(Dispatchers.IO) {
-        apodDao.insertApod(apod.toEntity())
-    }
-    
+
     override suspend fun getCachedApods(): List<Apod> = withContext(Dispatchers.IO) {
         apodDao.getRecentCachedApods(50).map { it.toDomain() }
     }
     
-    override suspend fun clearOldCache(): Result<Unit> = withContext(Dispatchers.IO) {
-        try {
-            val oneWeekAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000)
-            apodDao.deleteOldApods(oneWeekAgo)
-            notifyCacheClearedUseCase.notifyCacheCleared()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
+
     
     override suspend fun clearAllCache(): Result<Unit> = withContext(Dispatchers.IO) {
         try {

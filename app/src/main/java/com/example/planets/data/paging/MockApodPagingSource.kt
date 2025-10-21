@@ -79,7 +79,7 @@ class MockApodPagingSource(
                                     Log.w(TAG, "Failed to cache item: ${apod.title}")
                                 }
                             }
-
+                            //"Загрузили данные"
                             LoadResult.Page(
                                 data = mockData,
                                 prevKey = if (page == 0) null else page - 1,

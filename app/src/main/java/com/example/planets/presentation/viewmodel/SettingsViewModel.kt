@@ -30,22 +30,7 @@ class SettingsViewModel @Inject constructor(
         initialValue = ThemeMode.SYSTEM
     )
 
-    fun clearOldCache() {
-        viewModelScope.launch {
-            try {
-                clearCacheUseCase.clearOldCache()
-                _uiState.value = _uiState.value.copy(
-                    successMessage = "Старый кэш очищен",
-                    error = null
-                )
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    error = "Ошибка при очистке кэша: ${e.message}",
-                    successMessage = null
-                )
-            }
-        }
-    }
+
 
     fun clearAllCache() {
         viewModelScope.launch {

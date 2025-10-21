@@ -62,32 +62,5 @@ class NetworkMonitor(private val context: Context) {
         return isOnline
     }
     
-    fun getNetworkStatus(): Flow<Boolean> = callbackFlow {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        
-        val callback = object : ConnectivityManager.NetworkCallback() {
-            override fun onAvailable(network: Network) {
-                super.onAvailable(network)
-                trySend(true)
-            }
-            
-            override fun onLost(network: Network) {
-                super.onLost(network)
-                trySend(false)
-            }
-        }
-        
-        val networkRequest = NetworkRequest.Builder()
-            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            .build()
-            
-        connectivityManager.registerNetworkCallback(networkRequest, callback)
-        
-        // Send initial state
-        trySend(isOnlineSync() && checkInternetAccess())
-        
-        awaitClose {
-            connectivityManager.unregisterNetworkCallback(callback)
-        }
-    }.distinctUntilChanged()
+
 }

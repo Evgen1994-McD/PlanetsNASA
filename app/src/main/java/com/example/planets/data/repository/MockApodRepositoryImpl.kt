@@ -70,16 +70,6 @@ class MockApodRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getApodList(count: Int): Result<List<Apod>> = withContext(Dispatchers.IO) {
-        try {
-            delay(800) // Имитируем задержку сети
-            
-            val apods = MockApodData.mockApods.take(count)
-            Result.success(apods)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
 
     override suspend fun addToFavorites(apod: Apod): Result<Unit> = withContext(Dispatchers.IO) {
         try {
@@ -118,27 +108,12 @@ class MockApodRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun cacheApod(apod: Apod) = withContext(Dispatchers.IO) {
-        apodDao.insertApod(apod.toEntity())
-    }
 
     override suspend fun getCachedApods(): List<Apod> = withContext(Dispatchers.IO) {
         apodDao.getRecentCachedApods(20).map { it.toDomain() }
     }
 
-    override suspend fun clearOldCache(): Result<Unit> = withContext(Dispatchers.IO) {
-        try {
-            Log.d(TAG, "Clearing old cache...")
-            val oneWeekAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000)
-            apodDao.deleteOldApods(oneWeekAgo)
-            notifyCacheClearedUseCase.notifyCacheCleared()
-            Log.d(TAG, "Old cache cleared successfully")
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error clearing old cache", e)
-            Result.failure(e)
-        }
-    }
+
 
     override suspend fun clearAllCache(): Result<Unit> = withContext(Dispatchers.IO) {
         try {
